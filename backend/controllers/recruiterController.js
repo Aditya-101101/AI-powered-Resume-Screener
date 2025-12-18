@@ -56,7 +56,7 @@ const registerRecruiter = async (req, res) => {
         const token = createProfile(recruiter)
         if (!token)
             return res.status(500).json({ message: "Some error occured" })
-        return res.cookie("token", token, { sameSite: "lax", secure: true, httpOnly: true, maxAge: 10 * 86400 * 1000 }).status(201).json({ message: "Recruiter created successfully" })
+        return res.cookie("token", token, { sameSite: process.env.ISPROD ? "none" : "lax", secure: process.env.ISPROD, httpOnly: true, maxAge: 10 * 86400 * 1000 }).status(201).json({ message: "Recruiter created successfully" })
     } catch (err) {
         console.log(err)
         return res.status(500).json({ message: "Error registering Recruiter!" })

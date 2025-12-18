@@ -1,8 +1,12 @@
-const {pipeline} = require('@xenova/transformers')
-
+let pipeline;
 let embedder;
 
 async function loadModel() {
+    if (!pipeline) {
+        const mod = await import("@xenova/transformers");
+        pipeline = mod.pipeline;
+    }
+
     if (!embedder) {
         console.log("Loading model...");
         embedder = await pipeline(
@@ -13,7 +17,7 @@ async function loadModel() {
     }
 }
 
-export async function getEmbedding(text) {
+async function getEmbedding(text) {
     await loadModel();
 
     const output = await embedder(text, {
@@ -23,3 +27,5 @@ export async function getEmbedding(text) {
 
     return Array.from(output.data);
 }
+
+module.exports = { getEmbedding };

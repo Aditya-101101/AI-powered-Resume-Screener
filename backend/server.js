@@ -8,7 +8,7 @@ const jobRoute = require('./routes/job')
 const { checkUserAuth } = require('./middlewares/userAuthentication')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
-const {checkRecruiterAuth} = require('./middlewares/recruiterAuthentication')
+const { checkRecruiterAuth } = require('./middlewares/recruiterAuthentication')
 dotenv.config()
 
 const PORT = process.env.PORT
@@ -17,7 +17,7 @@ ConnectDB()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: `${process.env.CORS_ORIGIN}`,
     credentials: true
 }))
 

@@ -1,8 +1,12 @@
-const pipeline = require('@xenova/transformers')
-
+let pipeline;
 let extractor;
 
 async function loadModel() {
+    if (!pipeline) {
+        const mod = await import("@xenova/transformers");
+        pipeline = mod.pipeline;
+    }
+
     if (!extractor) {
         console.log("Loading FLAN-T5 model...");
         extractor = await pipeline(
@@ -13,7 +17,7 @@ async function loadModel() {
     }
 }
 
-export async function extractFields(parsedText) {
+async function extractFields(parsedText) {
     await loadModel();
 
     const prompt = `
@@ -32,7 +36,11 @@ Resume Text:
 ${parsedText}
 `;
 
-    const result = await extractor(prompt, { max_new_tokens: 300 });
+    const result = await extractor(prompt, {
+        max_new_tokens: 300,
+    });
 
     return result[0].generated_text;
 }
+
+module.exports = { extractFields };
