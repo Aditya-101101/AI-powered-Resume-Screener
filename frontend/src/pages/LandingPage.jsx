@@ -1,9 +1,31 @@
 import React from "react"
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import api from "../api/axios"
 
 const LandingPage = () => {
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const handleLoggedUserRedirect = async () => {
+            try {
+
+                const response = await api.get('/')
+                if (response.status === 200) {
+                    if (response.data.role === "USER")
+                        navigate('/user-dashboard', { replace: true })
+                    else if (response.data.role === "RECRUITER")
+                        navigate('/recruiter-dashboard', { replace: true })
+                }
+            } catch (err) {
+            }
+        }
+
+        handleLoggedUserRedirect()
+    }, [])
+
+
 
     const handleLoginClick = () => {
         navigate('/user-login')

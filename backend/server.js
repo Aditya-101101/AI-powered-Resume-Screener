@@ -9,6 +9,7 @@ const { checkUserAuth } = require("./middlewares/userAuthentication");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { checkRecruiterAuth } = require("./middlewares/recruiterAuthentication");
+const { redirectController } = require("./controllers/redirectController");
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -18,22 +19,20 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: process.env.CLIENT_URL,
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
     })
-);
+)
 
 app.use("/user", checkUserAuth("token"), userRoute);
 app.use("/recruiter", checkRecruiterAuth("token"), recruiterRoute);
 app.use("/jobs", jobRoute);
 
 
-app.get("/", (req, res) => {
-    res.send("Server Running")
-});
+app.get("/", checkUserAuth("token"), checkRecruiterAuth("token"), redirectController);
 
 
-// Global Error Handler
+
 app.use((err, req, res, next) => {
     console.error(err);
 
