@@ -43,17 +43,17 @@ ApplicationSchema.index(
     { expireAfterSeconds: 60 * 60 * 24 * 30 }
 )
 
-ApplicationSchema.pre('save', function (next) {
-    if (!this.isModified('skills')) return next();
+ApplicationSchema.pre('save', function () {
+    if (!this.isModified('skills')) return ;
 
     this.skills = [...new Set(
         this.skills.map(skill => skill.toLowerCase())
     )];
 
-    next();
+    return;
 });
 
-ApplicationSchema.pre('findOneAndUpdate', function (next) {
+ApplicationSchema.pre('findOneAndUpdate', function () {
     const update = this.getUpdate();
 
     if (update?.skills) {
@@ -62,7 +62,7 @@ ApplicationSchema.pre('findOneAndUpdate', function (next) {
         )];
     }
 
-    next();
+    return;
 });
 
 const Application = mongoose.model('application', ApplicationSchema)

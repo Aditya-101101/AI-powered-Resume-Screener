@@ -3,13 +3,16 @@ const User = require('../models/userSchema')
 const { createProfile } = require('../services/userAuth');
 const Application = require('../models/applicationSchema');
 const Job = require('../models/jobSchema')
-const pdfParse = require('pdf-parse')
-const fs = require('fs')
+const pdfParse = require("pdf-parse");
+const path = require("path");
+const fs = require("fs");
 const { getEmbedding } = require('../services/generateEmbedding');
 const { checkSimilarity } = require('../services/checkSimilarity');
-const { extractFields } = require('../services/requiredParams')
 const { cleanResumeText } = require('../services/textCleaner')
-const { uploadOnCloudinary } = require('../services/cloudinary')
+const { uploadOnCloudinary } = require('../services/cloudinary');
+const { extractSkillsAndExperience } = require('../services/requiredParams')
+
+
 
 const generateEmbedding = async (text) => {
     const vec = await getEmbedding(`${text}`);
@@ -109,117 +112,134 @@ const logoutUser = async (req, res) => {
     }
 }
 
+
 const uploadApplication = async (req, res) => {
     const user = req.user;
-    const resume = req.file
+    const resume = req.file;
+    const jobId = req.body.jobId;
 
     if (!user)
         return res.status(401).json({ message: "unauthenticated" });
 
-    const { jobId } = req.body;
     if (!jobId)
         return res.status(400).json({ message: "Invalid Job!" });
 
+    if (!resume)
+        return res.status(400).json({ message: "Resume is required!" });
+
+    if (resume.mimetype !== "application/pdf")
+        return res.status(400).json({ message: "Only PDF files are allowed!" });
 
     try {
-        if (!resume)
-            return res.status(400).json({ message: "Resume is required!" });
-
-        if (resume.mimetype !== "application/pdf")
-            return res.status(400).json({ message: "Only PDF files are allowed!" });
 
         const job = await Job.findOne({ _id: jobId, status: true });
         if (!job)
             return res.status(404).json({ message: "Job not found!" });
 
-        if (!job.status)
-            return res.status(403).json({ message: "Job closed" })
-
         const alreadyApplied = await Application.findOne({
-            jobId: jobId,
+            jobId,
             submittedBy: user.id
         });
 
-        if (alreadyApplied) {
+        if (alreadyApplied)
             return res.status(409).json({
                 message: "Application can be sent only once!"
             });
+
+        if (!Array.isArray(job.embedding) || job.embedding.length === 0)
+            return res.status(500).json({ message: "Job embedding missing!" });
+
+
+        const filePath = path.resolve(resume.path)
+
+        let buffer
+        try {
+            buffer = fs.readFileSync(filePath);
+        } catch (err) {
+            console.error("FILE READ ERROR:", err);
+            return res.status(500).json({ message: "Failed to read resume file" });
         }
 
+        let parsedResume
+        try {
+            parsedResume = await pdfParse(buffer);
+        } catch (err) {
+            console.error("PDF PARSE ERROR:", err);
+            return res.status(400).json({ message: "Unable to parse resume PDF" });
+        }
 
-        const jobEmbedding = job.embedding;
-        if (!jobEmbedding || jobEmbedding.length === 0)
-            return res.status(500).json({ message: "Some error occured!" });
-
-        const dataBuffer = await fs.promises.readFile(resume.path)
-        const parsedResume = await pdfParse(dataBuffer);
         const text = parsedResume.text;
+        console.log("TEXT LENGTH:", text?.length);
 
-        if (!text || text.length <= 100)
-            return res.status(400).json({ message: "Error parsing resume!" });
+        if (!text || text.length < 100)
+            return res.status(400).json({
+                message: "Invalid or scanned resume PDF"
+            });
+
+
 
         const cleanedText = cleanResumeText(text);
 
-        let resumeJson = {};
+        let resumeJson = {}
+        let extracted
         try {
-            const raw = await extractFields(cleanedText);
-            const jsonStr = raw.substring(
-                raw.indexOf("{"),
-                raw.lastIndexOf("}") + 1
-            );
-            resumeJson = JSON.parse(jsonStr);
-
-            if (Array.isArray(resumeJson.skills)) {
-                resumeJson.skills = [...new Set(resumeJson.skills.map(s => s.toLowerCase()))];
-            }
-        } catch {
-            return res.status(500).json({ message: "Failed to extract resume data" });
+            extracted = await extractSkillsAndExperience(
+                cleanedText
+            )
+            console.log(extracted)
+        } catch (err) {
+            console.error("Extraction error:", err);
+            return res.status(500).json({
+                message: "Failed to extract resume data"
+            });
         }
+        resumeJson.skills = extracted.skills;
+        resumeJson.experience = extracted.experience;
 
-        if (!Array.isArray(resumeJson.skills) || resumeJson.skills.length === 0) {
-            return res.status(400).json({ message: "Invalid resume data!" });
-        }
+
+        resumeJson.skills = Array.isArray(resumeJson.skills)
+            ? [...new Set(resumeJson.skills.map(s => s.toLowerCase()))]
+            : [];
 
         const exp = Number(resumeJson.experience);
-        if (Number.isNaN(exp) || exp < 0 || exp > 30)
-            return res.status(400).json({ message: "Invalid resume data!" })
-
-
+        resumeJson.experience =
+            Number.isFinite(exp) && exp >= 0 && exp <= 30 ? exp : 0;
 
         const resumeEmbedding = await generateEmbedding(cleanedText);
-        const similarity = checkSimilarity(resumeEmbedding, jobEmbedding)
+
+        const similarity = checkSimilarity(resumeEmbedding, job.embedding);
+
         const atsScore = Math.round(
             Math.max(0, Number.isFinite(similarity) ? similarity : 0) * 100
         );
 
-        const resumePath = await uploadOnCloudinary(resume.path)
-
-        if (!resumePath)
-            return res.status(500).json({ message: "resume upload failed" })
+        const uploaded = await uploadOnCloudinary(filePath);
+        console.log(uploaded)
+        if (!uploaded?.secure_url)
+            return res.status(500).json({ message: "Resume upload failed" });
 
         const application = await Application.create({
-            jobId: jobId,
+            jobId,
             submittedBy: user.id,
-            skills: resumeJson.skills || [],
-            experience: Number(resumeJson.experience),
-            resume: resumePath.secure_url,
-            atsScore: atsScore
+            skills: resumeJson.skills,
+            experience: resumeJson.experience,
+            resume: uploaded.secure_url,
+            atsScore
         });
 
-        const applicationData = {
-            skills: application.skills,
-            experience: application.experience,
-            status: application.status,
-            resume: resumePath.secure_url,
-            atsScore: atsScore
-        }
-
         return res.status(201).json({
-            application: applicationData,
+            application: {
+                skills: application.skills,
+                experience: application.experience,
+                status: application.status,
+                resume: application.resume,
+                atsScore
+            },
             message: "Application submitted successfully"
         });
 
     } catch (err) {
+        console.error("UPLOAD APPLICATION ERROR:", err);
 
         if (err.code === 11000) {
             return res.status(400).json({
@@ -229,12 +249,14 @@ const uploadApplication = async (req, res) => {
 
         return res.status(500).json({
             message: "Failed to submit application!"
-        })
+        });
     } finally {
-        if (resume?.path && fs.existsSync(resume.path))
+        if (resume?.path && fs.existsSync(resume.path)) {
             await fs.promises.unlink(resume.path);
+        }
     }
-}
+};
+
 
 
 const userData = async (req, res) => {
@@ -259,7 +281,7 @@ const userData = async (req, res) => {
             atsScore: application.atsScore,
             status: application.status,
             resume: application.resume
-        }));
+        }))
 
         return res.status(200).json({ user: userData, applications: applicationsData })
     } catch (err) {

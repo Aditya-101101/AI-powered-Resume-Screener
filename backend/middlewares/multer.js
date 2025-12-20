@@ -19,22 +19,6 @@ const fileFilter = (req, file, cb) => {
             cb(new Error('Only PDF files are allowed for resume'), false);
         }
     }
-    else if (file.fieldname === 'userAvatar') {
-        const allowedImages = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (allowedImages.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only JPG/PNG images are allowed for avatar'), false);
-        }
-    }
-    else if (file.fieldname === 'recruiterAvatar') {
-        const allowedImages = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (allowedImages.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only JPG/PNG images are allowed for avatar'), false);
-        }
-    }
     else {
         cb(new Error('Invalid file field'), false);
     }

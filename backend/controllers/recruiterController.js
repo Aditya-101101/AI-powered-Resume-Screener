@@ -173,7 +173,7 @@ const createJob = async (req, res) => {
         return res.status(201).json({ job: jobData, message: "Job created Successfully!" })
 
     } catch (err) {
-        return res.status(500).json({ message: "Error creating Job!" })
+        return res.status(500).json({ message: "Error creating Job!", error: err.message })
     } finally {
         if (jobCoverLocalPath && fs.existsSync(jobCoverLocalPath))
             await fs.promises.unlink(jobCoverLocalPath)

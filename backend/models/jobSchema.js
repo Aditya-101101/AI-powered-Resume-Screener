@@ -14,7 +14,7 @@ const JobSchema = new mongoose.Schema({
     },
     jobCoverUrl: {
         type: String,
-        default: '/uploads/profilePic.png'
+        // default: '/uploads/profilePic.png'
     },
     experienceRequired: {
         type: Number,
@@ -32,20 +32,19 @@ const JobSchema = new mongoose.Schema({
 
 }, { timestamps: true })
 
-JobSchema.pre('save', function (next) {
-    if (!this.isModified('skillsRequired')) return next();
+JobSchema.pre('save', function () {
+  if (!this.isModified('skillsRequired')) return;
 
-    if (!Array.isArray(this.skillsRequired)) {
-        this.skillsRequired = [];
-        return next();
-    }
+  if (!Array.isArray(this.skillsRequired)) {
+    this.skillsRequired = [];
+    return;
+  }
 
-    this.skillsRequired = [...new Set(
-        this.skillsRequired.map(skill => skill.toLowerCase())
-    )];
-
-    next();
+  this.skillsRequired = [
+    ...new Set(this.skillsRequired.map(skill => skill.toLowerCase()))
+  ];
 });
+
 
 const Job = mongoose.model('job', JobSchema)
 module.exports = Job

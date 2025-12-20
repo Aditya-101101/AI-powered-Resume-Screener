@@ -1,46 +1,118 @@
-let pipeline;
-let extractor;
 
-async function loadModel() {
-    if (!pipeline) {
-        const mod = await import("@xenova/transformers");
-        pipeline = mod.pipeline;
-    }
-
-    if (!extractor) {
-        console.log("Loading FLAN-T5 model...");
-        extractor = await pipeline(
-            "text2text-generation",
-            "Xenova/flan-t5-base"
-        );
-        console.log("Model loaded!");
-    }
+function normalize(skill) {
+    return skill
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/java script/g, "javascript")
+        .replace(/mongo db/g, "mongodb")
+        .replace(/tailwind css/g, "tailwindcss")
+        .replace(/rubyon rails/g, "ruby on rails")
+        .replace(/tensor flow/g, "tensorflow")
+        .replace(/py torch/g, "pytorch")
+        .replace(/j query/g, "jquery")
+        .replace(/\.js\b/g, ".js")
+        .replace(/[.]+$/, "")
+        .trim();
 }
 
-async function extractFields(parsedText) {
-    await loadModel();
 
-    const prompt = `
-Extract the following fields from the resume text:
-- Full Name
-- Email
-- Phone Number
-- Skills (list as a JSON array of strings)
-- Total Experience (only years, number only)
-- Education (highest degree)
+function looksLikeSkill(token) {
+    if (!token) return false;
 
-Return the result in STRICT JSON format.
-If a field is missing, return null.
+    if (token.length < 1 || token.length > 25) return false;
 
-Resume Text:
-${parsedText}
-`;
+    if (token.split(" ").length > 3) return false;
 
-    const result = await extractor(prompt, {
-        max_new_tokens: 300,
-    });
+    if (/[,:;]/.test(token)) return false;
+    if (/\d+%/.test(token)) return false;
+    if (/\b(ing|ed)\b/i.test(token)) return false;
 
-    return result[0].generated_text;
+    if (!/[a-zA-Z+#.]/.test(token)) return false;
+
+    if (!/^[a-zA-Z0-9+#. \-]+$/.test(token)) return false;
+
+    return true;
 }
 
-module.exports = { extractFields };
+
+function looksLikeHumanName(skill) {
+    return /^[a-z]+ [a-z]+$/.test(skill);
+}
+
+function looksLikeSection(skill) {
+    return /\b(education|experience|projects|skills|achievements|social)\b/.test(skill);
+}
+
+function looksLikeRole(skill) {
+    return /\b(engineer|developer|intern|manager)\b/.test(skill);
+}
+
+function looksLikeHobby(skill) {
+    return /\b(chess|cricket|badminton|football|table-tennis)\b/.test(skill);
+}
+
+function looksLikeLocation(skill) {
+    return /\b(state|city|india|jharkhand|dhanbad|iit)\b/.test(skill);
+}
+
+function isGarbage(skill) {
+    if (/^project name\d*$/i.test(skill)) return true;
+
+    if (/hackathons?/i.test(skill)) return true;
+
+    return (
+        looksLikeHumanName(skill) ||
+        looksLikeSection(skill) ||
+        looksLikeRole(skill) ||
+        looksLikeHobby(skill) ||
+        looksLikeLocation(skill) ||
+        skill.split(" ").length > 3 ||
+        /\b(etc|ranks|engagements|performance)\b/.test(skill)
+    );
+}
+
+function extractSkills(text) {
+    const skills = new Set();
+
+    const tokens = text
+        .split(/[\n•,|]/)
+        .map(t => t.trim())
+        .filter(Boolean);
+
+    for (const token of tokens) {
+        if (!looksLikeSkill(token)) continue;
+
+        const normalized = normalize(token);
+
+        if (normalized.length < 2) continue;
+        if (isGarbage(normalized)) continue;
+
+        skills.add(normalized);
+    }
+
+    return Array.from(skills);
+}
+
+
+function extractExperience(text) {
+    const years = text.match(/\b(19|20)\d{2}\b/g);
+
+    if (!years || years.some(y => y.includes("XX"))) {
+        return 0;
+    }
+
+    if (years.length < 2) return 0;
+
+    const nums = years.map(Number);
+    return Math.max(...nums) - Math.min(...nums);
+}
+
+
+function extractSkillsAndExperience(text) {
+    return {
+        skills: extractSkills(text),
+        experience: extractExperience(text)
+    };
+}
+
+module.exports = { extractSkillsAndExperience };
