@@ -29,7 +29,7 @@ const Application = ({ job, closeApplication }) => {
         console.log(job.id)
         try {
             const response = await api.post('/user/application', data)
-            if (response.status === 200) {
+            if (response.status === 201) {
                 closeApplication()
             }
         } catch (err) {

@@ -10,7 +10,8 @@ const { getEmbedding } = require('../services/generateEmbedding');
 const { checkSimilarity } = require('../services/checkSimilarity');
 const { cleanResumeText } = require('../services/textCleaner')
 const { uploadOnCloudinary } = require('../services/cloudinary');
-const { extractSkillsAndExperience } = require('../services/requiredParams')
+const { extractSkillsAndExperience } = require('../services/requiredParams');
+
 
 
 
@@ -149,7 +150,6 @@ const uploadApplication = async (req, res) => {
         if (!Array.isArray(job.embedding) || job.embedding.length === 0)
             return res.status(500).json({ message: "Job embedding missing!" });
 
-
         const filePath = path.resolve(resume.path)
 
         let buffer
@@ -258,15 +258,23 @@ const uploadApplication = async (req, res) => {
 };
 
 
+const APPLICATIONS_PER_PAGE = 3
 
 const userData = async (req, res) => {
     const user = req.user
+    const page = Math.max(1, req.query.page || 1)
+
+    const query = {}
     if (!user)
         return res.status(401).json({ message: "Unauthenticated!" })
 
     try {
-        const applications = await Application.find({ submittedBy: user.id }).sort({ atsScore: -1 }).lean()
+        const skip = (page - 1) * APPLICATIONS_PER_PAGE
 
+        const applicationCountPromise = Application.countDocuments({ submittedBy: user.id })
+        const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1 }).lean().populate('jobId', { title: 1, desc: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
+
+        const [applicationCount, applications] = await Promise.all([applicationCountPromise, applicationsPromise])
         const userData = {
             id: user.id,
             name: user.name,
@@ -275,6 +283,7 @@ const userData = async (req, res) => {
         }
 
         const applicationsData = applications.map(application => ({
+            id: application._id,
             skills: application.skills,
             experience: application.experience,
             jobId: application.jobId,
@@ -283,7 +292,13 @@ const userData = async (req, res) => {
             resume: application.resume
         }))
 
-        return res.status(200).json({ user: userData, applications: applicationsData })
+        const pageCount = Math.ceil(applicationCount / APPLICATIONS_PER_PAGE)
+
+        const pagination = {
+            applicationCount,
+            pageCount
+        }
+        return res.status(200).json({ user: userData, applications: applicationsData, pagination })
     } catch (err) {
         return res.status(500).json({ message: err.message })
     }

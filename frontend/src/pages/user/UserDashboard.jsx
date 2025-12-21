@@ -26,65 +26,78 @@ const UserDashboard = () => {
     })
     const [showApplication, setshowApplication] = useState(false)
 
-    useEffect(() => {
-        const getUserData = async () => {
+    const [applicationPageCount, setApplicationPageCount] = useState(0)
+    const [applicationPage, setApplicationPage] = useState(1)
 
-            try {
-                const response = await api.get('/user/data')
-                if (response.status === 200) {
-                    const userData = response.data.user
-                    setuserName(userData.name)
-                    setuserAvatar(userData.userAvatar)
-                    setEmail(userData.email)
-                    const Applications = response.data.applications
-                    console.log(Applications)
-                    setApplications(Applications)
-                }
-            } catch (err) {
-                setshowError(true)
-                setError({
-                    code: err.response?.status || 500,
-                    message: err.response?.data?.message || "Something went wrong"
-                })
-                setTimeout(() => {
-                    setshowError(false)
-                    setError({
-                        code: null,
-                        message: ""
-                    })
-                }, 5000)
+    const getUserData = async () => {
 
-                console.log(err)
+        try {
+            const response = await api.get(`/user/data?page=${applicationPage}`)
+            if (response.status === 200) {
+                const userData = response.data.user
+                const paginationDetails = response.data.pagination
+                setApplicationPageCount(paginationDetails.pageCount)
+                setuserName(userData.name)
+                setuserAvatar(userData.userAvatar)
+                setEmail(userData.email)
+                const Applications = response.data.applications
+                console.log(Applications)
+                setApplications(Applications)
             }
+        } catch (err) {
+            setshowError(true)
+            setError({
+                code: err.response?.status || 500,
+                message: err.response?.data?.message || "Something went wrong"
+            })
+            setTimeout(() => {
+                setshowError(false)
+                setError({
+                    code: null,
+                    message: ""
+                })
+            }, 5000)
+
+            console.log(err)
         }
+    }
+    const handleApplicationPageNext = () => {
+        setApplicationPage(applicationPage + 1)
+    }
+    const handleApplicationPagePrevious = () => {
+        setApplicationPage(applicationPage - 1)
+    }
+
+    useEffect(() => {
         getUserData()
-    }, [])
+    }, [content, applicationPage])
+
+    const getJobs = async () => {
+        try {
+            const response = await api.get('/jobs/')
+            if (response.status === 200) {
+                const jobs = response.data.jobs
+                setJobs(jobs)
+            }
+        } catch (err) {
+            setshowError(true)
+            setError({
+                code: err.response?.status || 500,
+                message: err.response?.data?.message || "Something went wrong"
+            })
+            setTimeout(() => {
+                setshowError(false)
+                setError({
+                    code: null,
+                    message: ""
+                })
+            }, 5000)
+
+            console.log(err)
+        }
+    }
 
     useEffect(() => {
-        const getJobs = async () => {
-            try {
-                const response = await api.get('/jobs/')
-                if (response.status === 200) {
-                    const jobs = response.data.jobs
-                    setJobs(jobs)
-                }
-            } catch (err) {
-                setshowError(true)
-                setError({
-                    code: err.response?.status || 500,
-                    message: err.response?.data?.message || "Something went wrong"
-                })
-                setTimeout(() => {
-                    setshowError(false)
-                    setError({
-                        code: null,
-                        message: ""
-                    })
-                }, 5000)
-
-                console.log(err)
-            }
-        }
         getJobs()
     }, [])
 
@@ -130,6 +143,7 @@ const UserDashboard = () => {
         setshowApplication(true)
     }
     const closeApplication = () => setshowApplication(false)
+
 
     return (
         <div className="h-screen w-screen bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff] flex items-center justify-center text-slate-800">
@@ -231,11 +245,12 @@ const UserDashboard = () => {
                                     ) : (
                                         applications.map(application => (
                                             <div
-                                                key={application._id}
-                                                className="flex gap-5 bg-green-200 rounded p-3"
+                                                key={application.id}
+                                                className="flex gap-5 justify-around bg-green-200 rounded p-3"
                                             >
-                                                <span>{application.status}</span>
-                                                <span>{application.atsScore}</span>
+                                                <span>JobTitle : {application.jobId.title}</span>
+                                                <span>Application Status : {application.status}</span>
+                                                <span>AtsScore : {application.atsScore}</span>
                                             </div>
                                         ))
                                     )}
@@ -246,7 +261,7 @@ const UserDashboard = () => {
 
                         {content === "jobs" && <section className="flex-1 p-6 bg-linear-to-br from-slate-50 via-white to-cyan-50">
                             <div className="h-full flex flex-col rounded-2xl bg-white/80 backdrop-blur shadow-lg p-6">
-                                <h2 className="text-lg font-semibold text-slate-700 mb-6">
+                                <h2 className="text-lg font-semibold text-slate-700 mb-1">
                                     Jobs
                                 </h2>
 
@@ -279,9 +294,9 @@ const UserDashboard = () => {
                                                     </p>
 
                                                     <div className="flex flex-wrap gap-2">
-                                                        {job.skillsRequired.map((skill, idx) => (
+                                                        {job.skillsRequired.map((skill) => (
                                                             <span
-                                                                key={idx}
+                                                                key={skill}
                                                                 className="px-2 py-1 text-xs font-medium rounded-full bg-indigo-500/10 text-indigo-600"
                                                             >
                                                                 {skill}
@@ -312,11 +327,7 @@ const UserDashboard = () => {
                         </section>}
 
                         {content === "applications" && <section className="flex-1 p-6 bg-linear-to-br from-slate-50 via-white to-cyan-50">
-                            <div className="
-                                h-full rounded-2xl
-                                bg-white/80 backdrop-blur
-                                shadow-lg
-                                p-6">
+                            <div className="h-full flex flex-col rounded-2xl bg-white/80 backdrop-blur shadow-lg p-6">
                                 <h2 className="text-lg font-semibold text-slate-700 mb-6">
                                     Applications
                                 </h2>
@@ -342,6 +353,97 @@ const UserDashboard = () => {
                                         color="text-rose-600"
                                     />
                                 </div>
+                                <div className="flex-1 overflow-y-auto rounded-xl p-4 flex flex-wrap gap-6">
+                                    {applications.length === 0 ? (
+                                        <div className="w-full text-2xl font-semibold text-center text-slate-500 mt-20">
+                                            🚫 No Applications to Show
+                                        </div>
+                                    ) : (
+                                        applications.map(application => (
+                                            <div
+                                                key={application.id}
+                                                className=" w-full sm:w-[48%] lg:w-[31%] bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition flex flex-col gap-4">
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-slate-500">Job Title</p>
+                                                    <p className="font-semibold text-slate-800">
+                                                        {application.jobId.title}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-600 font-medium">
+                                                        {application.status}
+                                                    </span>
+
+                                                    <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 font-medium">
+                                                        ATS: {application.atsScore}
+                                                    </span>
+                                                </div>
+
+                                                <a
+                                                    href={application.resume}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className=" mt-auto text-center py-2 rounded-lg font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white transition">
+                                                    View Resume
+                                                </a>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                <div className="w-full flex justify-center">
+                                    <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border">
+
+                                        <button
+                                            disabled={applicationPage === 1}
+                                            onClick={handleApplicationPagePrevious}
+                                            className=" px-3 py-1 rounded-md text-sm font-medium disabled:text-slate-400 disabled:cursor-not-allowed hover:bg-slate-100">
+                                            ← Prev
+                                        </button>
+
+                                        <span className="text-sm font-semibold text-slate-700">
+                                            Page {applicationPage} / {applicationPageCount}
+                                        </span>
+
+                                        <button
+                                            disabled={applicationPage === applicationPageCount}
+                                            onClick={handleApplicationPageNext}
+                                            className="px-3 py-1 rounded-md text-sm font-medium disabled:text-slate-400 disabled:cursor-not-allowed hover:bg-slate-100">
+                                            Next →
+                                        </button>
+
+                                        <div className="relative">
+                                            <select
+                                                value={applicationPage}
+                                                onChange={e => setApplicationPage(Number(e.target.value))}
+                                                className=" appearance-none bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg px-3 py-1.5 pr-8 shadow-sm cursor-pointer hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition">
+                                                {Array.from({ length: applicationPageCount || 10 }).map((_, index) => (
+                                                    <option key={index} value={index + 1}>
+                                                        Page {index + 1}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-4 w-4"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
                             </div>
                         </section>}
                     </main>

@@ -1,5 +1,5 @@
-let pipeline;
-let embedder;
+let pipeline
+let embedder
 
 async function loadModel() {
     if (!pipeline) {

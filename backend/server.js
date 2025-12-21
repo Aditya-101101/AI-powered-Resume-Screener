@@ -28,7 +28,6 @@ app.use("/user", checkUserAuth("token"), userRoute);
 app.use("/recruiter", checkRecruiterAuth("token"), recruiterRoute);
 app.use("/jobs", jobRoute);
 
-
 app.get("/", checkUserAuth("token"), checkRecruiterAuth("token"), redirectController);
 
 
