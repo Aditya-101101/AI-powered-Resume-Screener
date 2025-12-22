@@ -4,7 +4,8 @@ const { createProfile } = require("../services/recruiterAuth");
 const Job = require('../models/jobSchema');
 const Application = require('../models/applicationSchema')
 const { getEmbedding } = require('../services/generateEmbedding');
-const { uploadOnCloudinary } = require('../services/cloudinary');
+const { uploadJobCover } = require('../services/cloudinary');
+const path = require('path')
 const fs = require('fs')
 
 const generateEmbedding = async (text) => {
@@ -104,7 +105,7 @@ const logoutRecruiter = async (req, res) => {
 
 const createJob = async (req, res) => {
     const recruiter = req.recruiter
-    const jobCoverLocalPath = req.file?.jobCover[0]?.path
+    const jobCover = req.file
 
     if (!recruiter)
         return res.status(401).json({ message: "unauthenticated" })
@@ -118,25 +119,33 @@ const createJob = async (req, res) => {
         return res.status(400).json({ message: "All fields are required!" })
 
     const expReq = Number(experienceRequired)
-    if (Number.isNaN(expReq) || expReq < 0)
+    if (Number.isNaN(expReq) || expReq < 0 || expReq > 30)
         return res.status(400).json({ message: "Experience required must be a valid number" })
+
+    try {
+        skillsRequired = JSON.parse(skillsRequired)
+    } catch {
+        return res.status(400).json({ message: "Invalid skills format" })
+    }
 
     if (!Array.isArray(skillsRequired))
         return res.status(400).json({ message: "Wrong field value!" })
 
+
+
+
     if (desc.length < 20 || desc.length > 1500)
         return res.status(400).json({ message: "Description length error!" })
 
-    if (!jobCoverLocalPath)
+    if (!jobCover)
         return res.status(400).json({ message: "Job cover is required" })
 
     try {
 
-        let normalizedSkills
+        let normalizedSkills = Array.isArray(skillsRequired)
+            ? [...new Set(skillsRequired.map(s => s.toLowerCase()))]
+            : [];
 
-        if (Array.isArray(skillsRequired)) {
-            normalizedSkills = [...new Set(skillsRequired.map(s => s.toLowerCase()))];
-        }
 
         const jobEmbeddingData = JSON.stringify({
             title: title,
@@ -144,20 +153,35 @@ const createJob = async (req, res) => {
             experienceRequired: expReq
         })
 
+        console.log(jobEmbeddingData)
         const jobEmbedding = await generateEmbedding(jobEmbeddingData)
+
         if (!jobEmbedding || !Array.isArray(jobEmbedding))
             return res.status(409).json({ message: "Some error occured" })
+        console.log(jobEmbedding)
 
-        const jobCover = await uploadOnCloudinary(jobCoverLocalPath)
-        if (!jobCover)
-            return res.status(500).json({ message: "Error saving jobCover" })
+        if (!jobCover.mimetype.startsWith("image/")) {
+            return res.status(400).json({ message: "Invalid file type" });
+        }
+
+        if (jobCover.size > 5 * 1024 * 1024) {
+            return res.status(400).json({ message: "File too large (max 5MB)" });
+        }
+
+
+        const filePath = path.resolve(jobCover.path)
+
+        const uploaded = await uploadJobCover(filePath)
+        console.log(uploaded)
+        if (!uploaded?.secure_url)
+            return res.status(500).json({ message: "Job Cover upload failed" });
 
         const job = await Job.create({
             title: title,
             desc: desc,
             skillsRequired: normalizedSkills || [],
             experienceRequired: expReq || 0,
-            jobCoverUrl: jobCover.secure_url || null,
+            jobCover: uploaded.secure_url || null,
             createdBy: recruiter.id,
             embedding: jobEmbedding
         })
@@ -167,26 +191,47 @@ const createJob = async (req, res) => {
             desc: job.desc,
             skillsRequired: job.skillsRequired,
             experienceRequired: job.experienceRequired,
-            jobCoverUrl: job.jobCoverUrl,
+            jobCover: job.jobCover,
         }
 
         return res.status(201).json({ job: jobData, message: "Job created Successfully!" })
 
     } catch (err) {
-        return res.status(500).json({ message: "Error creating Job!", error: err.message })
+        console.error("JOB CREATION ERROR:", err);
+
+        if (err.code === 11000) {
+            return res.status(400).json({
+                message: "Job with similar details can be created only once!"
+            });
+        }
+
+        return res.status(500).json({
+            message: "Failed to create job!"
+        })
     } finally {
-        if (jobCoverLocalPath && fs.existsSync(jobCoverLocalPath))
-            await fs.promises.unlink(jobCoverLocalPath)
+        if (jobCover?.path && fs.existsSync(jobCover.path)) {
+            await fs.promises.unlink(jobCover.path)
+        }
     }
 }
 
+const JOBS_PER_PAGE = 3
+
 const recruiterData = async (req, res) => {
     const recruiter = req.recruiter
+    const page = Math.max(1, req.query.page || 1)
+
+    const query = {}
+
     if (!recruiter)
         return res.status(401).json({ message: "Unauthorized!" })
 
     try {
-        const jobs = await Job.find({ createdBy: recruiter.id }).lean()
+        const skip = (page - 1) * JOBS_PER_PAGE
+        const jobCountPromise = Job.countDocuments({ createdBy: recruiter.id })
+        const jobsPromise = Job.find({ createdBy: recruiter.id }).lean().sort({ status: -1 }).skip(skip).limit(JOBS_PER_PAGE)
+
+        const [jobCount, jobs] = await Promise.all([jobCountPromise, jobsPromise])
 
         const recruiterData = {
             id: recruiter.id,
@@ -195,7 +240,25 @@ const recruiterData = async (req, res) => {
             recruiterAvatar: recruiter.recruiterAvatar
         }
 
-        return res.status(200).json({ recruiter: recruiterData, jobs: jobs })
+
+        const jobsData = jobs.map(job => ({
+            id: job._id,
+            title: job.title,
+            desc: job.desc,
+            skillsRequired: job.skillsRequired,
+            experienceRequired: job.experienceRequired,
+            status: job.status
+        }))
+
+        const pageCount = Math.ceil(jobCount / JOBS_PER_PAGE)
+
+        const pagination = {
+            jobCount,
+            pageCount,
+            jobs
+        }
+
+        return res.status(200).json({ recruiter: recruiterData, pagination })
     } catch (err) {
         return res.status(500).json({ message: err.message })
     }

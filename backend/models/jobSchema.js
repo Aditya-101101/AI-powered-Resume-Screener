@@ -12,7 +12,7 @@ const JobSchema = new mongoose.Schema({
     skillsRequired: {
         type: [String],
     },
-    jobCoverUrl: {
+    jobCover: {
         type: String,
         // default: '/uploads/profilePic.png'
     },

@@ -275,6 +275,7 @@ const userData = async (req, res) => {
         const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1 }).lean().populate('jobId', { title: 1, desc: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
 
         const [applicationCount, applications] = await Promise.all([applicationCountPromise, applicationsPromise])
+
         const userData = {
             id: user.id,
             name: user.name,

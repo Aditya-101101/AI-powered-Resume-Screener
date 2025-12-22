@@ -2,7 +2,7 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 
-const uploadDir = path.join(__dirname, "../public/temp");
+const uploadDir = path.join(__dirname, "../public/tempJobCover");
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -10,7 +10,7 @@ if (!fs.existsSync(uploadDir)) {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public/temp')
+        cb(null, './public/tempJobCover')
     },
     filename: function (req, file, cb) {
         const ext = file.originalname.split('.').pop();
@@ -20,11 +20,11 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
 
-    if (file.fieldname === 'resume') {
-        if (file.mimetype === 'application/pdf') {
+    if (file.fieldname === 'jobCover') {
+        if (file.mimetype.startsWith("image/")) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF files are allowed for resume'), false);
+            cb(new Error('Only Image files are allowed for resume'), false);
         }
     }
     else {

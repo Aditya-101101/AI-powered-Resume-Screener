@@ -37,9 +37,9 @@ const uploadOnCloudinary = async (localFilePath) => {
 };
 
 const uploadJobCover = async (localFilePath) => {
-    try {
-        if (!localFilePath) return null;
+    if (!localFilePath) return null;
 
+    try {
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "image",
             folder: "job_covers",
@@ -48,13 +48,17 @@ const uploadJobCover = async (localFilePath) => {
             ]
         });
 
-        fs.unlinkSync(localFilePath);
+        await fs.promises.unlink(localFilePath);
+
         return response;
+
     } catch (err) {
-        if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+        if (fs.existsSync(localFilePath)) {
+            await fs.promises.unlink(localFilePath);
+        }
         throw err;
     }
 };
 
 
-module.exports = { uploadOnCloudinary }
+module.exports = { uploadOnCloudinary, uploadJobCover }
