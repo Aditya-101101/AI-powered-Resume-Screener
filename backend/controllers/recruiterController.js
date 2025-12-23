@@ -147,6 +147,8 @@ const createJob = async (req, res) => {
             : [];
 
 
+
+
         const jobEmbeddingData = JSON.stringify({
             title: title,
             skillsRequired: normalizedSkills || [],
@@ -245,7 +247,8 @@ const recruiterData = async (req, res) => {
             id: job._id,
             title: job.title,
             desc: job.desc,
-            skillsRequired: job.skillsRequired,
+            skillsRequired: job.skillsRequired.sort((a, b) => a.length - b.length),
+            jobCover: job.jobCover,
             experienceRequired: job.experienceRequired,
             status: job.status
         }))
@@ -255,7 +258,7 @@ const recruiterData = async (req, res) => {
         const pagination = {
             jobCount,
             pageCount,
-            jobs
+            jobsData
         }
 
         return res.status(200).json({ recruiter: recruiterData, pagination })

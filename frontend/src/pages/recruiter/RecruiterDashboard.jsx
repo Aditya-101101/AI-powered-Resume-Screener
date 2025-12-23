@@ -5,6 +5,8 @@ import Error from "../../components/Error";
 import { useNavigate } from 'react-router-dom'
 import Job from "../../components/Job";
 
+const MAX_SKILLS = 5;
+
 const RecruiterDashboard = () => {
   const navigate = useNavigate()
 
@@ -15,8 +17,8 @@ const RecruiterDashboard = () => {
   const [recruiterAvatar, setRecruiterAvatar] = useState("")
   const [email, setEmail] = useState("")
   const [jobs, setJobs] = useState([])
-  const [applications, setApplications] = useState([])
   const [content, setContent] = useState("overview")
+  const [jobUnderReview, setJobUnderReview] = useState(null)
   const [jobDetail, setJobDetail] = useState({
     title: "",
     desc: "",
@@ -26,8 +28,6 @@ const RecruiterDashboard = () => {
   })
 
   const StringToArray = (skills) => skills.split(",").map(item => item.trim()).filter(Boolean)
-
-  const [showJob, setShowJob] = useState(false)
 
   const [jobPageCount, setJobPageCount] = useState(0)
   const [jobPage, setJobPage] = useState(1)
@@ -42,8 +42,8 @@ const RecruiterDashboard = () => {
         setRecruiterName(recruiterData.name)
         setRecruiterAvatar(recruiterData.recruiterAvatar)
         setEmail(recruiterData.email)
-        console.log(paginationDetails.jobs)
-        setJobs(paginationDetails.jobs)
+        console.log(paginationDetails.jobsData)
+        setJobs(paginationDetails.jobsData)
       }
     } catch (err) {
       setshowError(true)
@@ -103,19 +103,14 @@ const RecruiterDashboard = () => {
     setshowError(false)
   }
 
-  const handleJobApply = (job) => {
-    setJobDetail({
-      id: job.id,
-      title: job.title,
-      desc: job.desc,
-      skillsRequired: job.skillsRequired,
-      experienceRequired: job.experienceRequired,
-      jobCover: job.jobCover
-    })
-    setShowJob(true)
+  const handleShowJob = (job) => {
+    console.log(job)
+    setJobUnderReview(job)
   }
 
-  const closeJob = () => setShowJob(false)
+  const closeJob = () => {
+    setJobUnderReview(null)
+  }
 
   const handleFormDataChange = (e) => {
     setJobDetail(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -174,18 +169,18 @@ const RecruiterDashboard = () => {
       console.log(err)
     }
   }
-  const MAX_SKILLS = 5;
 
   return (
-    <div className="h-screen w-screen bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff] flex items-center justify-center text-slate-800">
+    <div className="h-screen w-screen  bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff] flex items-center justify-center text-slate-800">
 
       {showerror && <Error error={error} onClose={onClose} />}
 
       <div className="relative h-[95vh] w-[95vw] rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white/60 backdrop-blur-xl">
+      {jobUnderReview && <Job closeJob={closeJob} job={jobUnderReview} />}
 
         <div className="flex w-full h-full">
           <aside
-            className={`w-66 p-5 bg-linear-to-b from-indigo-300 via-slate-100 to-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-30 transition-transform duration-300 ${showSidebar ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+            className={`w-66 p-5 bg-linear-to-b from-indigo-300 via-slate-100 to-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-20 transition-transform duration-300 ${showSidebar ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
 
             <img src="../public/resumeScreenerLogo.png" alt="logo" className="mb-7 flex h-12" />
             <nav className="space-y-2 text-sm">
@@ -218,7 +213,6 @@ const RecruiterDashboard = () => {
 
           <main className="flex-1 relative flex flex-col">
 
-            {showJob && <Job closeJob={closeJob} job={job} />}
             <header className=" min-w-full
                             min-h-14 px-5 flex items-center
                             bg-linear-to-r from-teal-500/20 via-cyan-400/10 to-transparent
@@ -251,24 +245,24 @@ const RecruiterDashboard = () => {
 
                 <div className="flex md:grid-cols-3 gap-5 mb-6">
                   <StatCard
-                    title="Applications"
-                    value={applications.length}
+                    title="Total Jobs"
+                    value={jobs.length}
                     gradient="from-indigo-500/20 to-indigo-300/10"
                     color="text-indigo-600" />
                   <StatCard
-                    title="Shortlisted"
+                    title="Jobs Open"
                     value="4"
                     gradient="from-teal-500/20 to-cyan-300/10"
                     color="text-teal-600" />
                   <StatCard
-                    title="Rejected"
+                    title="Jobs Closed"
                     value="8"
                     gradient="from-rose-500/20 to-pink-300/10"
                     color="text-rose-600"
                   />
                 </div>
 
-                <div className="flex-1 overflow-y-auto  rounded-lg p-4 flex flex-col gap-4">
+                {/* <div className="flex-1 overflow-y-auto  rounded-lg p-4 flex flex-col gap-4">
                   {applications.length === 0 ? (
                     <div className="text-2xl font-bold text-center mt-20">
                       !! No Applications to Show !!
@@ -285,18 +279,18 @@ const RecruiterDashboard = () => {
                       </div>
                     ))
                   )}
-                </div>
+                </div> */}
               </div>
             </section>}
 
-            {content === "jobs" && <section className="flex-1 p-6 bg-linear-to-br from-slate-50 via-white to-cyan-50">
-              <div className="h-full flex flex-col rounded-2xl bg-white/80 backdrop-blur shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-slate-700 mb-1">
+            {content === "jobs" && <section className="flex-1 px-6 py-1.5 lg:py-6 bg-linear-to-br from-slate-50 via-white to-cyan-50">
+              <div className="h-full flex flex-col rounded-2xl bg-white/80 backdrop-blur shadow-lg p-3 lg:p-6">
+                <h2 className="text-lg font-semibold text-slate-700 mx-4">
                   Jobs
                 </h2>
 
 
-                <div className="flex-1 overflow-y-auto  rounded-lg p-4 flex flex-col gap-4">
+                <div className="flex-1 overflow-y-auto  rounded-lg px-4 py-2 lg:py-6 flex flex-col gap-3">
                   {jobs.length === 0 ? (
                     <div className="text-2xl font-bold text-center mt-20">
                       !! No Job to Show !!
@@ -304,14 +298,14 @@ const RecruiterDashboard = () => {
                   ) : (
                     jobs.map(job => (
                       <div
-                        key={job._id}
-                        className="w-55 flex flex-col gap-4 rounded-2xl bg-white shadow-md border border-slate-200 hover:shadow-lg transition"
+                        key={job.id}
+                        className="w-55  flex flex-col gap-4 rounded-2xl bg-white shadow-md border border-slate-200 hover:shadow-lg transition"
                       >
-                        <div className="h-32 rounded-t-2xl bg-linear-to-r from-indigo-500/20 via-cyan-400/20 to-teal-300/20 flex items-center justify-center">
+                        {/* <div className="h-32 rounded-t-2xl bg-linear-to-r from-indigo-500/20 via-cyan-400/20 to-teal-300/20 flex items-center justify-center">
                           <span className="text-sm font-semibold text-slate-700">
                             Job Opening
                           </span>
-                        </div>
+                        </div> */}
 
                         <div className="p-4 flex flex-col gap-3">
                           <h3 className="text-lg font-semibold text-slate-800">
@@ -359,12 +353,63 @@ const RecruiterDashboard = () => {
                     ))
                   )}
                 </div>
+                <div className="w-full flex justify-center">
+                  <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border">
+
+                    <button
+                      disabled={jobPage === 1}
+                      onClick={handleJobPagePrevious}
+                      className=" px-3 py-1 rounded-md text-sm font-medium disabled:text-slate-400 disabled:cursor-not-allowed hover:bg-slate-100">
+                      ← Prev
+                    </button>
+
+                    <span className="text-sm font-semibold text-slate-700">
+                      Page {jobPage} / {jobPageCount}
+                    </span>
+
+                    <button
+                      disabled={jobPage === jobPageCount}
+                      onClick={handleJobPageNext}
+                      className="px-3 py-1 rounded-md text-sm font-medium disabled:text-slate-400 disabled:cursor-not-allowed hover:bg-slate-100">
+                      Next →
+                    </button>
+
+                    <div className="relative">
+                      <select
+                        value={jobPage}
+                        onChange={e => setJobPage(Number(e.target.value))}
+                        className=" appearance-none bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg px-3 py-1.5 pr-8 shadow-sm cursor-pointer hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition">
+                        {Array.from({ length: jobPageCount || 10 }).map((_, index) => (
+                          <option key={index} value={index + 1}>
+                            Page {index + 1}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
 
               </div>
             </section>}
 
             {content === "createJob" && (
-              <section className="flex-1 p-3 bg-linear-to-br from-slate-50 via-white to-cyan-50">
+              <section className="flex-1 overflow-y-scroll md:overflow-hidden p-3 bg-linear-to-br from-slate-50 via-white to-cyan-50">
                 <div className="h-full flex flex-col rounded-2xl bg-white/80 backdrop-blur shadow-lg p-3">
 
                   <h2 className="text-xl px-3 font-semibold text-slate-700">
@@ -380,6 +425,7 @@ const RecruiterDashboard = () => {
                         </label>
                         <input
                           type="text"
+                          id="title"
                           name="title"
                           required
                           onChange={handleFormDataChange}
@@ -396,6 +442,7 @@ const RecruiterDashboard = () => {
                         <input
                           type="number"
                           name="experienceRequired"
+                          id="experienceRequired"
                           min={0}
                           max={30}
                           step={1}
@@ -412,6 +459,7 @@ const RecruiterDashboard = () => {
                         </label>
                         <textarea
                           name="desc"
+                          id="desc"
                           required
                           onChange={handleFormDataChange}
                           rows={4}
@@ -427,6 +475,7 @@ const RecruiterDashboard = () => {
                         </label>
                         <input
                           type="text"
+                          id="skillsRequired"
                           name="skillsRequired"
                           required
                           onChange={handleFormDataChange}
@@ -440,22 +489,27 @@ const RecruiterDashboard = () => {
                           Job Cover Image
                         </label>
                         <div className="w-full flex justify-between items-center">
-
+                          <span
+                            className="block sm:hidden rounded-xl bg-cyan-500 px-5 py-2 text-white text-sm font-medium hover:bg-cyan-600 transition"
+                          >
+                            Choose File
+                          </span>
                           <input
                             type="file"
-                            name="jobCoverUrl"
+                            id="jobCover"
+                            name="jobCover"
                             required
                             accept=".png,.jpg,.jpeg"
                             onChange={handleJobCoverChange}
-                            className="block w-[60%] border border-slate-200 shadow-sm  rounded-xl  text-sm text-slate-600
-                          file:mr-4 file:rounded-xl file:border-0
+                            className="hidden sm:block w-[60%] border border-slate-200 shadow-sm  rounded-xl  text-sm text-slate-600
+                          md:file:mr-4 file:rounded-xl file:border-0
                           file:bg-cyan-500 file:px-4 file:py-2
                           file:text-white file:font-medium
                           hover:file:bg-cyan-600 transition"
                           />
                           <button
                             type="submit"
-                            className="mx-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 px-6 py-2.5 text-sm font-medium shadow-sm hover:bg-slate-200 active:scale-[0.98] transition-all">
+                            className="md:mx-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 px-6 py-2.5 text-sm font-medium shadow-sm hover:bg-slate-200 active:scale-[0.98] transition-all">
                             Create Job
                           </button>
 

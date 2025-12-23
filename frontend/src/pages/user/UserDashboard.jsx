@@ -265,8 +265,7 @@ const UserDashboard = () => {
                                     Jobs
                                 </h2>
 
-
-                                <div className="flex-1 overflow-y-auto  rounded-lg p-4 flex flex-col gap-4">
+                                <div className="flex-1 overflow-y-auto  rounded-lg p-4 flex gap-4">
                                     {jobs.length === 0 ? (
                                         <div className="text-2xl font-bold text-center mt-20">
                                             !! No Job to Show !!

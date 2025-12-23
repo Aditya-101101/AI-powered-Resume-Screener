@@ -5,6 +5,6 @@ const { checkRecruiterAuth } = require('../middlewares/recruiterAuthentication')
 
 
 router.get('/', jobController.allJobs)
-router.patch('/:jobId', checkRecruiterAuth("token"), jobController.job)
+router.get('/applications', checkRecruiterAuth("token"), jobController.job)
 
 module.exports = router

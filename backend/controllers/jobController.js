@@ -24,17 +24,19 @@ const allJobs = async (req, res) => {
 
 const job = async (req, res) => {
     const recruiter = req.recruiter
+    const jobId = req.query.jobId
     if (!recruiter)
         return res.status(401).json({ message: "Unauthenticated" })
 
-    const jobId = req.params.jobId
-
+    if (!jobId)
+        return res.status(400).json({ message: "wrong Request!" })
+    console.log(jobId)
     try {
         const job = await Job.findOne({ _id: jobId, createdBy: recruiter.id })
 
         if (!job)
-            return res.status(404).json({ message: "job not found" })
-        
+            return res.status(403).json({ message: "Unauthorized" })
+
         const applications = await Application.find(
             { jobId: jobId },
             {
@@ -43,9 +45,10 @@ const job = async (req, res) => {
                 atsScore: 1,
                 status: 1,
                 submittedBy: 1,
-                createdAt: 1
+                createdAt: 1,
+                resume: 1
             }
-        ).sort({ atsScore: -1 })
+        ).sort({ atsScore: -1 }).populate("submittedBy", { name: 1, email: 1 })
 
         return res.status(200).json({ applications: applications })
     } catch (err) {
