@@ -1,4 +1,5 @@
 const express = require('express')
+const dotenv = require('dotenv')
 const Recruiter = require('../models/recruiterSchema')
 const { createProfile } = require("../services/recruiterAuth");
 const Job = require('../models/jobSchema');
@@ -6,7 +7,9 @@ const Application = require('../models/applicationSchema')
 const { getEmbedding } = require('../services/generateEmbedding');
 const { uploadJobCover } = require('../services/cloudinary');
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs');
+const mongoose = require('mongoose');
+dotenv.config()
 
 const generateEmbedding = async (text) => {
     const vec = await getEmbedding(`${text}`);
@@ -155,12 +158,12 @@ const createJob = async (req, res) => {
             experienceRequired: expReq
         })
 
-        console.log(jobEmbeddingData)
+        // console.log(jobEmbeddingData)
         const jobEmbedding = await generateEmbedding(jobEmbeddingData)
 
         if (!jobEmbedding || !Array.isArray(jobEmbedding))
             return res.status(409).json({ message: "Some error occured" })
-        console.log(jobEmbedding)
+        // console.log(jobEmbedding)
 
         if (!jobCover.mimetype.startsWith("image/")) {
             return res.status(400).json({ message: "Invalid file type" });
@@ -174,7 +177,7 @@ const createJob = async (req, res) => {
         const filePath = path.resolve(jobCover.path)
 
         const uploaded = await uploadJobCover(filePath)
-        console.log(uploaded)
+        // console.log(uploaded)
         if (!uploaded?.secure_url)
             return res.status(500).json({ message: "Job Cover upload failed" });
 
@@ -217,7 +220,7 @@ const createJob = async (req, res) => {
     }
 }
 
-const JOBS_PER_PAGE = 3
+const JOBS_PER_PAGE = process.env.JOBS_PER_PAGE
 
 const recruiterData = async (req, res) => {
     const recruiter = req.recruiter
@@ -230,10 +233,90 @@ const recruiterData = async (req, res) => {
 
     try {
         const skip = (page - 1) * JOBS_PER_PAGE
+
+        const recruiterId = new mongoose.Types.ObjectId(recruiter.id)
+
+        const jobsStatsPromise = Job.aggregate([
+            {
+                $match: { createdBy: recruiterId }
+            },
+            {
+                $lookup: {
+                    from: "applications",
+                    foreignField: "jobId",
+                    localField: '_id',
+                    as: "total_applications"
+                }
+            },
+            {
+                $addFields: {
+                    totalApplications: { $size: "$total_applications" },
+
+                    acceptedApplications: {
+                        $size: {
+                            $filter: {
+                                input: "$total_applications",
+                                as: "apps",
+                                cond: { $eq: ["$$apps.status", "Accepted"] }
+                            }
+                        }
+                    },
+                    rejectedApplications: {
+                        $size: {
+                            $filter: {
+                                input: "$total_applications",
+                                as: "apps",
+                                cond: { $eq: ["$$apps.status", "Rejected"] }
+                            }
+                        }
+                    },
+                    applicationsRemainingToReview: {
+                        $size: {
+                            $filter: {
+                                input: "$total_applications",
+                                as: "apps",
+                                cond: { $in: ["$$apps.status", ["Applied", "UnderReview"]] }
+                            }
+                        }
+                    },
+                    applicationsSubmittedToday: {
+                        $size: {
+                            $filter: {
+                                input: "$total_applications",
+                                as: "apps",
+                                cond: {
+                                    $gte: ["$$apps.createdAt", {
+                                        $dateTrunc: {
+                                            date: "$$NOW",
+                                            unit: "day"
+                                        }
+                                    }]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    totalApplications: 1,
+                    acceptedApplications: 1,
+                    rejectedApplications: 1,
+                    applicationsRemainingToReview: 1,
+                    applicationsSubmittedToday: 1
+                }
+            }
+        ])
         const jobCountPromise = Job.countDocuments({ createdBy: recruiter.id })
+        const jobOpenCountPromise = Job.countDocuments({ createdBy: recruiter.id, status: true })
+        const jobCloseCountPromise = Job.countDocuments({ createdBy: recruiter.id, status: false })
         const jobsPromise = Job.find({ createdBy: recruiter.id }).lean().sort({ status: -1 }).skip(skip).limit(JOBS_PER_PAGE)
 
-        const [jobCount, jobs] = await Promise.all([jobCountPromise, jobsPromise])
+        const [jobCount, jobs, jobsOpen, jobsClosed, jobsStats] = await Promise.all([jobCountPromise, jobsPromise, jobOpenCountPromise, jobCloseCountPromise, jobsStatsPromise])
+
+        // console.log(jobsStats)
 
         const recruiterData = {
             id: recruiter.id,
@@ -243,7 +326,9 @@ const recruiterData = async (req, res) => {
         }
 
 
-        const jobsData = jobs.map(job => ({
+
+
+        let jobsData = jobs.map(job => ({
             id: job._id,
             title: job.title,
             desc: job.desc,
@@ -253,12 +338,31 @@ const recruiterData = async (req, res) => {
             status: job.status
         }))
 
+        jobsData = jobsData.map(job => {
+            const stat = jobsStats.find(
+                s => s._id.toString() === job.id.toString()
+            )
+
+            return {
+                ...job,
+                stats: stat || {
+                    totalApplications: 0,
+                    acceptedApplications: 0,
+                    rejectedApplications: 0,
+                    applicationsRemainingToReview: 0,
+                    applicationsSubmittedToday: 0
+                }
+            }
+        })
+
         const pageCount = Math.ceil(jobCount / JOBS_PER_PAGE)
 
         const pagination = {
             jobCount,
             pageCount,
-            jobsData
+            jobsData,
+            jobsClosed,
+            jobsOpen
         }
 
         return res.status(200).json({ recruiter: recruiterData, pagination })
@@ -294,7 +398,7 @@ const updateApplication = async (req, res) => {
     if (!applicationId || !applicationStatus)
         return res.status(400).json({ message: "All fields required" });
 
-    if (applicationStatus !== 'Accepted' && applicationStatus !== 'Rejected' && applicationStatus !== 'UnderProcessing')
+    if (applicationStatus !== 'Accepted' && applicationStatus !== 'Rejected')
         return res.status(400).json({ message: "wrong status" })
 
     try {
@@ -311,15 +415,7 @@ const updateApplication = async (req, res) => {
             return res.status(409).json({ message: "wrong request!" })
 
         let response
-        if (application.status === 'Applied' && applicationStatus === 'UnderProcessing') {
-            response = await Application.updateOne(
-                {
-                    _id: applicationId,
-                    jobId: job._id
-                },
-                { $set: { status: applicationStatus } }
-            );
-        } else if (application.status === 'UnderProcessing') {
+        if (application.status === 'UnderReview') {
 
             response = await Application.updateOne(
                 {

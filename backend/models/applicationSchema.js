@@ -19,13 +19,12 @@ const ApplicationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Applied", "UnderProcessing", "Accepted", "Rejected"],
+        enum: ["Applied", "UnderReview", "Accepted", "Rejected"],
         default: "Applied"
     },
     atsScore: {
         type: Number,
         required: true,
-
     },
     resume: {
         type: String,

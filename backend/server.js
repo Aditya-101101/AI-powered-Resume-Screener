@@ -17,6 +17,7 @@ ConnectDB();
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
@@ -28,8 +29,8 @@ app.use("/user", checkUserAuth("token"), userRoute);
 app.use("/recruiter", checkRecruiterAuth("token"), recruiterRoute);
 app.use("/jobs", jobRoute);
 
-app.get("/", checkUserAuth("token"), checkRecruiterAuth("token"), redirectController);
 
+app.get("/", checkUserAuth("token"), checkRecruiterAuth("token"), redirectController);
 
 
 app.use((err, req, res, next) => {

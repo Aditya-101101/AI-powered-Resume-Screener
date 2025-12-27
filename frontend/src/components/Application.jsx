@@ -2,19 +2,24 @@ import React from 'react'
 import api from '../api/axios'
 import Error from './Error'
 import { useState } from 'react'
+import Loading from './Loading'
+
+const MAX_SKILLS = 5
 
 const Application = ({ job, closeApplication }) => {
 
     const [resume, setResume] = useState(null)
     const [showerror, setshowError] = useState(false)
     const [error, setError] = useState({ code: null, message: "" })
-    console.log(job)
+    const [loading, setLoading] = useState(false)
+
     const handleResumeChange = (e) => {
         setResume(e.target.files[0])
     }
 
     const handleFormSubmit = async (e) => {
         e.preventDefault()
+        setLoading(true)
         if (!resume) {
             setshowError(true);
             setError({
@@ -47,6 +52,8 @@ const Application = ({ job, closeApplication }) => {
             }, 5000)
 
             console.log(err)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -57,13 +64,12 @@ const Application = ({ job, closeApplication }) => {
     return (
         <div className='absolute z-20 h-full w-full flex items-center justify-center p-5 rounded-r-lg overflow-hidden shadow bg-black/10 backdrop-blur-xl'>
             {showerror && <Error error={error} onClose={onClose} />}
-
+            {loading && <Loading />}
             <div className="h-full mr-5 max-w-1/3 rounded-2xl overflow-hidden bg-white shadow-md flex flex-col">
 
 
                 <div className="h-60 bg-slate-800 overflow-hidden">
                     <img
-                        // src={job.jobCoverUrl}
                         src="../src/assets/FrontendDev.jpg"
                         alt="Job Cover"
                         className="w-full h-full object-cover"
@@ -93,15 +99,20 @@ const Application = ({ job, closeApplication }) => {
                             Required Skills
                         </p>
                         <div className="flex flex-wrap gap-2">
-                            {job.skillsRequired.map((skill, idx) => (
+                            {job.skillsRequired.slice(0, MAX_SKILLS).map((skill) => (
                                 <span
-                                    key={idx}
-                                    className="px-3 py-1 text-xs rounded-full
-                                   bg-indigo-50 text-indigo-600"
+                                    key={skill}
+                                    className="px-2 py-1 text-xs font-medium rounded-full bg-indigo-500/10 text-indigo-600"
                                 >
                                     {skill}
                                 </span>
                             ))}
+
+                            {job.skillsRequired.length > MAX_SKILLS && (
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-600">
+                                    +{job.skillsRequired.length - MAX_SKILLS} more
+                                </span>
+                            )}
                         </div>
                     </div>
 

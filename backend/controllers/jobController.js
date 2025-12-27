@@ -1,43 +1,72 @@
 const express = require('express')
+const dotenv = require('dotenv')
 const Application = require('../models/applicationSchema')
 const Job = require('../models/jobSchema')
+dotenv.config()
+
+const JOBS_PER_PAGE = process.env.JOBS_PER_PAGE
 
 const allJobs = async (req, res) => {
+    const page = Math.max(1, req.query.page || 1)
+
+    const query = {}
+
     try {
-        const jobs = await Job.find({ status: true }, {
+        const skip = (page - 1) * JOBS_PER_PAGE
+        const jobCountPromise = Job.countDocuments()
+
+        const jobsPromise = Job.find({ status: true }, {
             title: 1,
             desc: 1,
             jobCoverUrl: 1,
             skillsRequired: 1,
             experienceRequired: 1
-        })
+        }).skip(skip).limit(JOBS_PER_PAGE)
+
+        const [jobCount, jobs] = await Promise.all([jobCountPromise, jobsPromise])
+
+        const pageCount = Math.ceil(jobCount / JOBS_PER_PAGE)
 
         if (!jobs || jobs.length === 0)
             return res.json({ jobs: [] });
 
-        return res.status(200).json({ jobs: jobs });
+        const pagination = {
+            jobCount,
+            pageCount,
+        }
+
+        return res.status(200).json({ jobs: jobs, pagination })
     } catch (err) {
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message })
     }
 }
 
+const APPLICATIONS_PER_PAGE = process.env.APPLICATIONS_PER_PAGE + 6
 
 const job = async (req, res) => {
     const recruiter = req.recruiter
     const jobId = req.query.jobId
+    const page = Math.max(1, req.query.page || 1)
+
+    const query = {}
+
     if (!recruiter)
         return res.status(401).json({ message: "Unauthenticated" })
 
     if (!jobId)
         return res.status(400).json({ message: "wrong Request!" })
+
     console.log(jobId)
     try {
+        const skip = (page - 1) * APPLICATIONS_PER_PAGE
         const job = await Job.findOne({ _id: jobId, createdBy: recruiter.id })
 
         if (!job)
             return res.status(403).json({ message: "Unauthorized" })
 
-        const applications = await Application.find(
+        const applicationCountPromise = Application.countDocuments({ jobId: jobId })
+
+        const applicationsPromise = Application.find(
             { jobId: jobId },
             {
                 skills: 1,
@@ -46,11 +75,26 @@ const job = async (req, res) => {
                 status: 1,
                 submittedBy: 1,
                 createdAt: 1,
-                resume: 1
+                resume: 1,
+                jobId: 1
             }
-        ).sort({ atsScore: -1 }).populate("submittedBy", { name: 1, email: 1 })
+        ).sort({ atsScore: -1 }).populate("submittedBy", { name: 1, email: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
 
-        return res.status(200).json({ applications: applications })
+        const response = await Application.updateMany({ jobId: jobId }, { status: "UnderReview" })
+
+        if (response.modifiedCount !== response.matchedCount)
+            return res.status(500).json({ message: "Error updating Status!" })
+
+        const [applicationCount, applications] = await Promise.all([applicationCountPromise, applicationsPromise])
+
+        const pageCount = Math.ceil(applicationCount / APPLICATIONS_PER_PAGE)
+
+        const pagination = {
+            applicationCount,
+            pageCount
+        }
+
+        return res.status(200).json({ applications: applications, pagination })
     } catch (err) {
         return res.status(500).json({ message: "error fetching the applications" })
     }

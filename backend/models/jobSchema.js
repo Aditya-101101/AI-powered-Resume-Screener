@@ -14,7 +14,6 @@ const JobSchema = new mongoose.Schema({
     },
     jobCover: {
         type: String,
-        // default: '/uploads/profilePic.png'
     },
     experienceRequired: {
         type: Number,

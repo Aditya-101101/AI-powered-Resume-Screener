@@ -3,20 +3,27 @@ import api from '../api/axios'
 import Error from './Error'
 import { useState, useEffect } from 'react'
 import Resume from './Resume'
+
+
 const MAX_SKILLS = 8
+
 
 const Job = ({ closeJob, job }) => {
   // console.log(job)
   const [showerror, setshowError] = useState(false)
   const [error, setError] = useState({ code: null, message: "" })
   const [applications, setApplications] = useState([])
-  const [resumeUrl, setResumeUrl] = useState(null)
+  const [Application, setApplication] = useState(null)
+  const [applicationPageCount, setApplicationPageCount] = useState(1)
+  const [applicationPage, setApplicationPage] = useState(1)
 
   const getApplications = async () => {
     try {
-      const response = await api.get(`/jobs/applications?jobId=${job.id}`)
+      const response = await api.get(`/jobs/applications?jobId=${job.id}&page=${applicationPage}`)
       if (response.status === 200) {
-        console.log(response.data.applications)
+        // console.log(response.data.applications)
+        const paginationDetails = response.data.pagination
+        setApplicationPageCount(paginationDetails.pageCount)
         setApplications(response.data.applications)
       }
     } catch (err) {
@@ -37,172 +44,259 @@ const Job = ({ closeJob, job }) => {
     }
   }
 
+  const handleApplicationPageNext = () => {
+    setApplicationPage(applicationPage + 1)
+  }
+  const handleApplicationPagePrevious = () => {
+    setApplicationPage(applicationPage - 1)
+  }
+
   useEffect(() => {
     getApplications()
-  }, [])
+  }, [applicationPage])
 
   const onClose = () => {
     setshowError(false)
   }
 
-  const handleViewResume = (resumeUrl) => {
-    setResumeUrl(resumeUrl)
+  const handleViewResume = (application) => {
+    setApplication(application)
   }
 
   const closeResume = () => {
-    setResumeUrl(null)
+    setApplication(null)
+  }
+
+  const handleCloseJob = async () => {
+    if (confirm("Sure Close Job!")) {
+      try {
+        const data = {
+          jobId: job.id,
+          status: false
+        }
+        const response = await api.patch('/recruiter/update', data)
+        if (response.status === 200)
+          alert("!! Job Closed Successfully !!")
+      } catch (err) {
+        setshowError(true)
+        setError({
+          code: err.response?.status || 500,
+          message: err.response?.data?.message || "Something went wrong"
+        })
+        setTimeout(() => {
+          setshowError(false)
+          setError({
+            code: null,
+            message: ""
+          })
+        }, 5000)
+
+        console.log(err)
+      }
+    } else {
+      return null;
+    }
   }
 
   return (
     <div>
-      <div className='absolute z-30 top-0 left-0 h-full w-full flex items-center justify-center p-5 rounded-r-lg overflow-hidden shadow bg-black/10 backdrop-blur-xl'>
-        {resumeUrl&&<Resume closeResume={closeResume} resumeUrl={resumeUrl}/>}
-        {showerror && <Error error={error} onClose={onClose} />}
-        <div className="h-full mr-5 max-w-1/3 rounded-2xl overflow-hidden bg-white shadow-md flex flex-col">
+  <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
 
+    {Application && <Resume closeResume={closeResume} Application={Application} />}
+    {showerror && <Error error={error} onClose={onClose} />}
 
-          <div className="min-h-50 bg-slate-800 overflow-hidden">
-            <img
-              src={job.jobCover}
-              alt="Job Cover"
-              className="w-full h-full object-cover"
-            />
-          </div>
+    <div className="h-full w-full max-w-7xl rounded-2xl bg-white shadow-2xl flex overflow-hidden">
 
-          <div className="flex overflow-y-auto flex-col gap-4 p-5 flex-1">
+      {/* LEFT — JOB DETAILS */}
+      <div className="w-[35%] min-w-[320px] border-r border-slate-200 flex flex-col">
 
-            <div className="">
-              <h2 className="text-xl font-semibold leading-tight">
-                {job.title}
-              </h2>
-              <p className="text-sm">
-                Job opening
-              </p>
-            </div>
-
-            <p className="text-sm text-slate-600 overflow-y-scroll leading-relaxed line-clamp-6">
-              {job.desc}
-            </p>
-
-
-            <div>
-              <p className="text-xs font-semibold text-slate-500 mb-2 uppercase">
-                Required Skills
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {job.skillsRequired.slice(0, MAX_SKILLS).map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-2 py-1 text-xs font-medium rounded-full bg-indigo-500/10 text-indigo-600"
-                  >
-                    {skill}
-                  </span>
-                ))}
-
-                {job.skillsRequired.length > MAX_SKILLS && (
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-600">
-                    +{job.skillsRequired.length - MAX_SKILLS} more
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-auto border-t pt-4 space-y-2 text-sm text-slate-700">
-              <div className="flex justify-between">
-                <span>Experience Required</span>
-                <span className="font-medium">
-                  {job.experienceRequired} yrs
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* Cover */}
+        <div className="h-44 bg-slate-800">
+          <img
+            src={job.jobCover}
+            alt="Job Cover"
+            className="h-full w-full object-cover"
+          />
         </div>
 
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
 
-
-        <div className="flex flex-col min-w-2/3 h-full">
-          <div className="h-14 w-full flex items-center justify-between px-6 mb-4
-                    rounded-2xl bg-slate-100">
+          <div>
             <h2 className="text-lg font-semibold text-slate-800">
-              Applications
+              {job.title}
             </h2>
-
-            <svg
-              onClick={closeJob}
-              className="cursor-pointer hover:fill-red-600 transition"
-              xmlns="http://www.w3.org/2000/svg"
-              height="22"
-              viewBox="0 -960 960 960"
-              width="22"
-              fill="#475569"
-            >
-              <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
-            </svg>
+            <p className="text-xs text-slate-500">
+              Job Opening
+            </p>
           </div>
 
-          <div className=" flex-1 p-10 rounded-2xl bg-white shadow-md
-                    flex items-center justify-center">
+          <p className="text-sm text-slate-600 leading-relaxed line-clamp-6">
+            {job.desc}
+          </p>
 
-            <div className="flex-1 overflow-y-auto  rounded-lg p-4 flex flex-col gap-4">
-              {applications.length === 0 ? (
-                <div className="text-2xl font-bold text-center mt-20">
-                  !! No Applications to Show !!
-                </div>
-              ) : (
-                applications.map(application => (
-                  <div
-                    key={application.id}
-                    className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition"
-                  >
+          {/* Skills */}
+          <div>
+            <p className="text-xs font-semibold text-slate-500 mb-2 uppercase">
+              Required Skills
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {job.skillsRequired.slice(0, MAX_SKILLS).map(skill => (
+                <span
+                  key={skill}
+                  className="px-2 py-0.5 text-[11px] rounded-full 
+                             bg-indigo-50 text-indigo-600 border border-indigo-100"
+                >
+                  {skill}
+                </span>
+              ))}
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-800">
-                          ApplicantName : {application.submittedBy.name}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          Email : {application.submittedBy.email}
-                        </span>
-                      </div>
-
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">
-                        ATS {application.atsScore}
-                      </span>
-                    </div>
-
-                    <div className="h-px w-full bg-slate-200" />
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Resume</span>
-
-                      <button onClick={() => handleViewResume(application.resume)} className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition">
-
-                        View
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3.5 w-3.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 7h6m0 0v6m0-6L10 20"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                ))
+              {job.skillsRequired.length > MAX_SKILLS && (
+                <span className="px-2 py-0.5 text-[11px] rounded-full bg-slate-100 text-slate-600">
+                  +{job.skillsRequired.length - MAX_SKILLS}
+                </span>
               )}
             </div>
           </div>
+
+          {/* Footer */}
+          <div className="mt-auto pt-4 border-t border-slate-200 flex items-center justify-between">
+            <div className="text-sm text-slate-600">
+              Experience:{" "}
+              <span className="font-medium text-slate-800">
+                {job.experienceRequired} yrs
+              </span>
+            </div>
+
+            <button
+              onClick={handleCloseJob}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg 
+                         bg-red-100 text-red-600 
+                         hover:bg-red-600 hover:text-white 
+                         transition"
+            >
+              Close Job
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* RIGHT — APPLICATIONS */}
+      <div className="flex-1 flex flex-col">
+
+        {/* Header */}
+        <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200 bg-slate-50">
+          <h2 className="text-lg font-semibold text-slate-800">
+            Applications
+          </h2>
+
+          <button
+            onClick={closeJob}
+            className="p-1 rounded-md hover:bg-red-100 transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Applications List */}
+        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3">
+          {applications.length === 0 ? (
+            <div className="text-lg font-semibold text-slate-400 text-center mt-24">
+              No applications found
+            </div>
+          ) : (
+            applications.map(application => (
+              <div
+                key={application._id}
+                className="rounded-xl border border-slate-200 bg-white p-4 
+                           shadow-sm hover:shadow-md transition flex flex-col gap-3"
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">
+                      {application.submittedBy.name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {application.submittedBy.email}
+                    </p>
+                  </div>
+
+                  <span className="px-2.5 py-1 text-xs font-semibold rounded-full 
+                                   bg-indigo-50 text-indigo-600 border border-indigo-100">
+                    ATS {application.atsScore}
+                  </span>
+                </div>
+
+                <div className="h-px bg-slate-200" />
+
+                {/* Resume */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">
+                    Resume
+                  </span>
+
+                  <button
+                    onClick={() => handleViewResume(application)}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-md 
+                               bg-indigo-600 text-white 
+                               hover:bg-indigo-700 transition"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Pagination */}
+        <div className="py-3 flex justify-center border-t border-slate-200">
+          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border">
+
+            <button
+              disabled={applicationPage === 1}
+              onClick={handleApplicationPagePrevious}
+              className="px-2 py-1 text-xs rounded-md 
+                         disabled:text-slate-400 disabled:cursor-not-allowed 
+                         hover:bg-slate-100 transition">
+              ←
+            </button>
+
+            <span className="text-xs font-semibold text-slate-700">
+              {applicationPage} / {applicationPageCount}
+            </span>
+
+            <button
+              disabled={applicationPage === applicationPageCount}
+              onClick={handleApplicationPageNext}
+              className="px-2 py-1 text-xs rounded-md 
+                         disabled:text-slate-400 disabled:cursor-not-allowed 
+                         hover:bg-slate-100 transition">
+              →
+            </button>
+
+            <select
+              value={applicationPage}
+              onChange={e => setApplicationPage(Number(e.target.value))}
+              className="ml-2 text-xs rounded-md border border-slate-300 
+                         px-2 py-1 cursor-pointer
+                         hover:border-indigo-400 focus:ring-2 focus:ring-indigo-300 transition"
+            >
+              {Array.from({ length: applicationPageCount || 10 }).map((_, i) => (
+                <option key={i} value={i + 1}>
+                  Page {i + 1}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
+</div>
+
   )
 }
 

@@ -1,4 +1,6 @@
 const express = require('express')
+const dotenv = require('dotenv')
+const mongoose = require('mongoose')
 const User = require('../models/userSchema')
 const { createProfile } = require('../services/userAuth');
 const Application = require('../models/applicationSchema');
@@ -11,7 +13,7 @@ const { checkSimilarity } = require('../services/checkSimilarity');
 const { cleanResumeText } = require('../services/textCleaner')
 const { uploadOnCloudinary } = require('../services/cloudinary');
 const { extractSkillsAndExperience } = require('../services/requiredParams');
-
+dotenv.config()
 
 
 
@@ -258,7 +260,7 @@ const uploadApplication = async (req, res) => {
 };
 
 
-const APPLICATIONS_PER_PAGE = 3
+const APPLICATIONS_PER_PAGE = process.env.APPLICATIONS_PER_PAGE
 
 const userData = async (req, res) => {
     const user = req.user
@@ -270,17 +272,44 @@ const userData = async (req, res) => {
 
     try {
         const skip = (page - 1) * APPLICATIONS_PER_PAGE
+        const userObjectId = new mongoose.Types.ObjectId(user.id);
 
+        const atsScoresPromise = Application.aggregate([
+            { $match: { submittedBy: userObjectId } },
+            {
+                $group: {
+                    _id: null,
+                    avgAts: { $avg: "$atsScore" },
+                    maxAts: { $max: "$atsScore" },
+                    minAts: { $min: "$atsScore" }
+                }
+            }
+        ]);
+        
         const applicationCountPromise = Application.countDocuments({ submittedBy: user.id })
+        const acceptedCountPromise = Application.countDocuments({ submittedBy: user.id, status: "Accepted" })
+        const rejectedCountPromise = Application.countDocuments({ submittedBy: user.id, status: "Rejected" })
+        const underReviewCountPromise = Application.countDocuments({ submittedBy: user.id, status: "UnderReview" })
         const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1 }).lean().populate('jobId', { title: 1, desc: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
 
-        const [applicationCount, applications] = await Promise.all([applicationCountPromise, applicationsPromise])
+        const [applicationCount, applications, acceptedCount, rejectedCount, underReviewCount, atsScores] = await Promise.all([applicationCountPromise, applicationsPromise, acceptedCountPromise, rejectedCountPromise, underReviewCountPromise, atsScoresPromise])
+
+        const atsStats = atsScores[0] || {
+            avgAts: 0,
+            maxAts: 0,
+            minAts: 0
+        };
+
+        console.log(atsStats)
 
         const userData = {
             id: user.id,
             name: user.name,
             email: user.email,
-            userAvatar: user.userAvatar
+            userAvatar: user.userAvatar,
+            avgScore: atsStats.avgAts,
+            highestScore: atsStats.maxAts,
+            lowestScore: atsStats.minAts,
         }
 
         const applicationsData = applications.map(application => ({
@@ -297,6 +326,9 @@ const userData = async (req, res) => {
 
         const pagination = {
             applicationCount,
+            underReviewCount,
+            acceptedCount,
+            rejectedCount,
             pageCount
         }
         return res.status(200).json({ user: userData, applications: applicationsData, pagination })

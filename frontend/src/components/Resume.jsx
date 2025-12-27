@@ -1,52 +1,114 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import api from '../api/axios'
 import Error from './Error'
 import { useState } from 'react'
 
-const Resume = ({ closeResume, resumeUrl }) => {
 
-    const [showerror, setshowError] = useState(false)
-    const [error, setError] = useState({ code: null, message: "" })
+const Resume = ({ closeResume, Application }) => {
 
-    const onClose = () => {
-        setshowError(false)
+  console.log(Application)
+  const [showerror, setshowError] = useState(false)
+  const [error, setError] = useState({ code: null, message: "" })
+
+
+  const onClose = () => {
+    setshowError(false)
+  }
+
+  const handleSetStatus = async (status) => {
+    const data = {
+      applicationId: Application._id,
+      applicationStatus: status
     }
-    return (
-        <div>
-            <div className='absolute z-40 top-0 left-0 p-2 h-full w-full flex items-center justify-between overflow-hidden  bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff]'>
+    try {
+      const response = await api.patch('/recruiter/update-applicationStatus', data)
+      if (response.status === 200) {
+        alert(`Application ${status} Successfully!`)
+      }
+    } catch (err) {
+      setshowError(true)
+      setError({
+        code: err.response?.status || 500,
+        message: err.response?.data?.message || "Something went wrong"
+      })
+      setTimeout(() => {
+        setshowError(false)
+        setError({
+          code: null,
+          message: ""
+        })
+      }, 5000)
 
-                {showerror && <Error error={error} onClose={onClose} />}
+      console.log(err)
+    }
+  }
 
-                <div className="h-full mr-5 min-w-1/4 rounded-2xl overflow-hidden bg-white/90 shadow-sm shadow-slate-300 flex flex-col">
-                </div>
+  return (
+    <div>
+      <div className="fixed inset-0 z-50 flex items-center justify-center 
+                  bg-black/30 backdrop-blur-sm p-4">
 
-                <div className="flex-1 flex-col h-full">
-                    <div className="h-[10%] w-full flex items-center justify-between px-6 mb-4 rounded-2xl bg-white/90  shadow-sm shadow-slate-300">
-                        <h2 className=" mx-4 text-xl font-semibold text-slate-800">
-                            Resume
-                        </h2>
+        {showerror && <Error error={error} onClose={onClose} />}
 
-                        <svg
-                            onClick={closeResume}
-                            className="cursor-pointer hover:fill-red-600 transition"
-                            xmlns="http://www.w3.org/2000/svg"
-                            height="22"
-                            viewBox="0 -960 960 960"
-                            width="22"
-                            fill="#475569"
-                        >
-                            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
-                        </svg>
-                    </div>
+        <div className="h-full w-full max-w-7xl rounded-2xl 
+                    bg-white/90 shadow-2xl overflow-hidden flex">
 
-                    <div className="h-[87%] p-3 rounded bg-white/95 shadow-sm shadow-slate-300 flex items-center justify-center">
-                     <iframe loading='lazy' src={resumeUrl} className='w-full h-full'  title='Resume Preview'></iframe>
-                    </div>
-                </div>
+
+          <div className="hidden md:flex justify-between w-[22%] border-r border-slate-200 
+                      bg-slate-50 p-5 flex-col">
+            <div>
+
+              <h3 className="text-sm font-semibold text-slate-700 mb-2">
+                Resume Review
+              </h3>
+              <p className="text-xs text-slate-500 overflow-auto leading-relaxed">
+               
+              </p>
             </div>
-        </div>
+            <div className='flex w-full justify-around'>
+              <button onClick={() => handleSetStatus("Accepted")} className='bg-green-200 text-green-400 px-4 py-1 rounded hover:outline-1 hover:cursor-pointer hover:scale-95'>Accept</button>
+              <button onClick={() => handleSetStatus("Rejected")} className='bg-red-200 text-red-400 px-4 py-1 rounded hover:outline-1 hover:cursor-pointer hover:scale-95'>Reject</button>
+            </div>
+          </div>
 
-    )
+          {/* RIGHT — PREVIEW */}
+          <div className="flex-1 flex flex-col">
+
+            {/* Header */}
+            <div className="h-14 px-5 flex items-center justify-between 
+                        border-b border-slate-200 bg-white">
+              <h2 className="text-lg font-semibold text-slate-800">
+                Resume
+              </h2>
+
+              <button
+                onClick={closeResume}
+                className="p-1 rounded-md hover:bg-red-100 transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Iframe */}
+            <div className="flex-1 bg-slate-100 p-3">
+              <div className="h-full w-full rounded-xl overflow-hidden 
+                          bg-white shadow-inner border border-slate-200">
+                <iframe
+                  loading="lazy"
+                  src={Application.resume}
+                  title="Resume Preview"
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  )
 }
 
 export default Resume
