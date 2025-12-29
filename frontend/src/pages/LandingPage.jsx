@@ -42,15 +42,15 @@ const LandingPage = () => {
     return (
         <div className="min-h-screen pb-10 bg-linear-to-br from-[#f7f8fb] via-[#eef1f7] to-[#e8ecf4] text-[#1e293b]">
 
-            <nav className="flex justify-between items-center px-12 py-6">
+            <nav className="flex justify-between items-center px-3 sm:px-12 py-6">
                 <h1 className="text-xl font-semibold tracking-wide">
-                    Resume<span className="text-teal-500">Screen</span>
+                    Re<span className="text-teal-500">Screener</span>
                 </h1>
                 <div className="flex gap-4">
                     <button onClick={handleLoginClick} className="px-4 py-2 rounded-xl text-md hover:bg-black/5 transition">
                         Login
                     </button>
-                    <button onClick={handleGetStartedClick} className="px-6 py-2 rounded-xl bg-teal-500 text-white hover:bg-teal-600 transition shadow-md">
+                    <button onClick={handleGetStartedClick} className="sm:px-6 px-2 py-2 rounded-xl bg-teal-500 text-white hover:bg-teal-600 transition shadow-md">
                         Get Started
                     </button>
                 </div>

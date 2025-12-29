@@ -36,7 +36,7 @@ const UserDashboard = () => {
     desc: "",
     skillsRequired: [],
     experienceRequired: null,
-    jobCoverUrl: null,
+    jobCover: null,
   });
 
   const [showApplication, setshowApplication] = useState(false);
@@ -182,7 +182,7 @@ const UserDashboard = () => {
       desc: job.desc,
       skillsRequired: job.skillsRequired,
       experienceRequired: job.experienceRequired,
-      jobCoverUrl: job.jobCoverUrl,
+      jobCover: job.jobCover,
     });
     setshowApplication(true);
   };
@@ -192,10 +192,10 @@ const UserDashboard = () => {
     <div className="h-screen w-screen bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff] flex items-center justify-center text-slate-800">
       {showerror && <Error error={error} onClose={onClose} />}
 
-      <div className="relative h-[95vh] w-[95vw] rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white/60 backdrop-blur-xl">
+      <div className="relative md:h-[95vh] md:w-[95vw] w-full h-full md:rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white/60 backdrop-blur-xl">
         <div className="flex w-full h-full">
           <aside
-            className={`w-66 p-5 bg-linear-to-b from-indigo-300 via-slate-100 to-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-30 transition-transform duration-300 ${showSidebar ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+            className={`max-w-66 md:w-66 p-5 bg-linear-to-b from-indigo-300 via-slate-100 to-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-30 transition-transform duration-300 ${showSidebar ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
           >
             <img
               src="../public/resumeScreenerLogo.png"
@@ -297,128 +297,130 @@ const UserDashboard = () => {
 
             {content === "overview" && (
               <section
-                className="h-full md:flex-1 w-full px-3 py-2
-                    bg-linear-to-br from-slate-50 via-white to-cyan-50"
+                className="flex-1 md:h-[88%] md:w-full min-w-0 md:px-5 md:py-3 box-border overflow-y-auto
+  bg-linear-to-br from-slate-50 via-white to-cyan-50"
               >
                 <div
-                  className="h-full flex flex-col rounded-3xl
-                  bg-white/70 backdrop-blur-xl
-                  shadow-xl overflow-hidden"
+                  className="flex h-full min-w-0 flex-col md:rounded-2xl md:p-0 overflow-y-auto
+    bg-white/85 backdrop-blur-xl shadow-lg lg:overflow-hidden"
                 >
                   {/* Header (compact) */}
-                  <div className="px-5 py-3">
+                  <div className="px-5 py-3 border-b min-w-0 border-slate-200/60 shrink-0">
                     <h2 className="text-lg font-semibold text-slate-800">
                       Overview
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Application & ATS summary
                     </p>
                   </div>
 
-                  {/* Stat Cards (compact spacing) */}
-                  <div className="px-5 pb-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      <StatCard
-                        title="Applied"
-                        value={applicationsStatusCount.totalCount}
-                        gradient="from-indigo-500/20 to-indigo-300/5"
-                        color="text-indigo-700"
-                      />
-                      <StatCard
-                        title="Shortlisted"
-                        value={applicationsStatusCount.acceptedCount}
-                        gradient="from-emerald-500/20 to-emerald-300/5"
-                        color="text-emerald-700"
-                      />
-                      <StatCard
-                        title="Rejected"
-                        value={applicationsStatusCount.rejectedCount}
-                        gradient="from-rose-500/20 to-rose-300/5"
-                        color="text-rose-700"
-                      />
-                    </div>
-                  </div>
+                  <div className="overflow-y-auto lg:overflow-y-hidden min-w-0 h-full ">
 
-                  {/* Insights (ONE scrollable area) */}
-                  <div className="flex-1 px-5 pb-2 overflow-y-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-                      {/* Pie Chart (fixed height) */}
-                      <div
-                        className="lg:col-span-3 rounded-2xl
-                        bg-linear-to-br from-white/80 to-slate-50/60
-                        shadow-md p-4
-                        flex flex-col items-center justify-center"
-                      >
-                        <div className="w-full h-55">
-                          <ApplicationStatusPie
-                            stats={{
-                              applied: applicationsStatusCount.totalCount,
-                              underReview:
-                                applicationsStatusCount.underReviewCount,
-                              shortlisted:
-                                applicationsStatusCount.acceptedCount,
-                              rejected: applicationsStatusCount.rejectedCount,
-                            }}
-                          />
-                        </div>
-
-                        {/* Compact legend */}
-                        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                          <span className="flex items-center gap-2 text-indigo-600">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500" />
-                            Applied
-                          </span>
-                          <span className="flex items-center gap-2 text-yellow-500">
-                            <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                            Under Review
-                          </span>
-                          <span className="flex items-center gap-2 text-emerald-600">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                            Shortlisted
-                          </span>
-                          <span className="flex items-center gap-2 text-rose-600">
-                            <span className="w-2 h-2 rounded-full bg-rose-500" />
-                            Rejected
-                          </span>
-                        </div>
+                    {/* Stat Cards (compact spacing) */}
+                    <div className="px-1 md:px-5 py-3 lg:pt-1 min-w-0 shrink-0">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <StatCard
+                          title="Applied"
+                          value={applicationsStatusCount.totalCount}
+                          gradient="from-indigo-500/20 to-indigo-300/5"
+                          color="text-indigo-700"
+                        />
+                        <StatCard
+                          title="Shortlisted"
+                          value={applicationsStatusCount.acceptedCount}
+                          gradient="from-emerald-500/20 to-emerald-300/5"
+                          color="text-emerald-700"
+                        />
+                        <StatCard
+                          title="Rejected"
+                          value={applicationsStatusCount.rejectedCount}
+                          gradient="from-rose-500/20 to-rose-300/5"
+                          color="text-rose-700"
+                        />
                       </div>
+                    </div>
 
-                      {/* ATS Summary (compressed) */}
-                      <div
-                        className="lg:col-span-2 rounded-2xl
-                        bg-linear-to-br from-indigo-50 via-white to-cyan-50
-                        shadow-md p-4
-                        flex flex-col justify-between"
-                      >
-                        <h3 className="text-xs font-semibold text-slate-600 uppercase">
-                          ATS Summary
-                        </h3>
-
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">Highest</span>
-                          <span className="font-semibold text-emerald-600">
-                            {atsStats.max}
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">Lowest</span>
-                          <span className="font-semibold text-rose-600">
-                            {atsStats.min}
-                          </span>
-                        </div>
-
+                    {/* Insights (ONE scrollable area) */}
+                    <div className="flex-1 px-3 sm:px-5 pb-2 overflow-y-auto">
+                      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+                        {/* Pie Chart (fixed height) */}
                         <div
-                          className="mt-2 p-3 rounded-xl
+                          className="lg:col-span-3 rounded-2xl
+                        bg-linear-to-br from-white/80 to-slate-50/60
+                        shadow-md sm:px-4 py-4 px-1 
+                        flex flex-col items-center justify-center"
+                        >
+                          <div className="w-full h-55">
+                            <ApplicationStatusPie
+                              stats={{
+                                applied: applicationsStatusCount.totalCount,
+                                underReview:
+                                  applicationsStatusCount.underReviewCount,
+                                shortlisted:
+                                  applicationsStatusCount.acceptedCount,
+                                rejected: applicationsStatusCount.rejectedCount,
+                              }}
+                            />
+                          </div>
+
+                          {/* Compact legend */}
+                          <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                            <span className="flex items-center gap-2 text-indigo-600">
+                              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                              Applied
+                            </span>
+                            <span className="flex items-center gap-2 text-yellow-500">
+                              <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                              Under Review
+                            </span>
+                            <span className="flex items-center gap-2 text-emerald-600">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                              Shortlisted
+                            </span>
+                            <span className="flex items-center gap-2 text-rose-600">
+                              <span className="w-2 h-2 rounded-full bg-rose-500" />
+                              Rejected
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* ATS Summary (compressed) */}
+                        <div
+                          className="lg:col-span-2 rounded-2xl
+                        bg-linear-to-br from-indigo-50 via-white to-cyan-50
+                        shadow-md p-4 gap-3
+                        flex flex-col justify-between"
+                        >
+                          <h3 className="text-xs font-semibold text-slate-600 uppercase">
+                            ATS Summary
+                          </h3>
+
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">Highest</span>
+                            <span className="font-semibold text-emerald-600">
+                              {atsStats.max}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">Lowest</span>
+                            <span className="font-semibold text-rose-600">
+                              {atsStats.min}
+                            </span>
+                          </div>
+
+                          <div
+                            className="mt-2 p-3 rounded-xl
                           bg-linear-to-r from-indigo-500/10 to-cyan-500/10
                           flex items-center justify-between"
-                        >
-                          <span className="text-xs text-slate-600">
-                            Avg ATS
-                          </span>
-                          <span className="text-2xl font-bold text-indigo-600">
-                            {atsStats.avg?.toFixed(1)}
-                          </span>
+                          >
+                            <span className="text-xs text-slate-600">
+                              Avg ATS
+                            </span>
+                            <span className="text-2xl font-bold text-indigo-600">
+                              {atsStats.avg?.toFixed(1)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -522,7 +524,7 @@ const UserDashboard = () => {
                     )}
                   </div>
                   {/* Pagination */}
-                  <div className="py-3 flex justify-center border-t border-slate-200">
+                  <div className="py-3 mt-auto flex justify-center border-t border-slate-200">
                     <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-xl shadow-sm border">
                       <button
                         disabled={jobPage === 1}
@@ -669,7 +671,7 @@ const UserDashboard = () => {
                   </div>
 
                   {/* Pagination */}
-                  <div className="py-3 flex justify-center border-t border-slate-200">
+                  <div className="py-3 mt-auto flex justify-center border-t border-slate-200">
                     <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-xl shadow-sm border">
                       <button
                         disabled={applicationPage === 1}

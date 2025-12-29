@@ -355,6 +355,20 @@ const recruiterData = async (req, res) => {
             }
         })
 
+        const applicationsStats = {
+            totalApplications: 0,
+            acceptedApplications: 0,
+            rejectedApplications: 0,
+            applicationsRemainingToReview: 0,
+            applicationsSubmittedToday: 0
+        }
+
+        applicationsStats.totalApplications = jobsData.reduce((acc, job) => acc + job.stats.totalApplications, 0)
+        applicationsStats.acceptedApplications = jobsData.reduce((acc, job) => acc + job.stats.acceptedApplications, 0)
+        applicationsStats.rejectedApplications = jobsData.reduce((acc, job) => acc + job.stats.rejectedApplications, 0)
+        applicationsStats.applicationsRemainingToReview = jobsData.reduce((acc, job) => acc + job.stats.applicationsRemainingToReview, 0)
+        applicationsStats.applicationsSubmittedToday = jobsData.reduce((acc, job) => acc + job.stats.applicationsSubmittedToday, 0)
+
         const pageCount = Math.ceil(jobCount / JOBS_PER_PAGE)
 
         const pagination = {
@@ -362,7 +376,8 @@ const recruiterData = async (req, res) => {
             pageCount,
             jobsData,
             jobsClosed,
-            jobsOpen
+            jobsOpen,
+            applicationsStats
         }
 
         return res.status(200).json({ recruiter: recruiterData, pagination })

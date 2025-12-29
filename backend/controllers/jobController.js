@@ -1,6 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const Application = require('../models/applicationSchema')
+const { generateApplicationReview } = require('../services/generateReview')
 const Job = require('../models/jobSchema')
 dotenv.config()
 
@@ -18,7 +19,7 @@ const allJobs = async (req, res) => {
         const jobsPromise = Job.find({ status: true }, {
             title: 1,
             desc: 1,
-            jobCoverUrl: 1,
+            jobCover: 1,
             skillsRequired: 1,
             experienceRequired: 1
         }).skip(skip).limit(JOBS_PER_PAGE)
@@ -29,7 +30,8 @@ const allJobs = async (req, res) => {
 
         if (!jobs || jobs.length === 0)
             return res.json({ jobs: [] });
-
+ 
+        // console.log(jobs)
         const pagination = {
             jobCount,
             pageCount,
@@ -100,10 +102,39 @@ const job = async (req, res) => {
     }
 }
 
+const generateReview = async (req, res) => {
+    const recruiter = req.recruiter
+    const application = req.body.application
+    if (!recruiter)
+        return res.status(401).json({ message: "unauthenticated" })
+    if (!application || !application.jobId || !application.resume) {
+        return res.status(400).json({
+            message: "jobId and resume are required"
+        });
+    }
+
+    try {
+        const job = await Job.findById(application.jobId)
+        if (job.createdBy.toString() !== recruiter.id)
+            return res.status(403).json({ message: "unauthorized" })
+
+        const review = await generateApplicationReview(application.resume, job)
+
+        // if (!review)
+        //     return res.status(500).json({ message: "some error occured while generating review" })
+
+        return res.status(201).json({ review: "generating" })
+
+    } catch (err) {
+        return res.status(500).json({ error: err })
+    }
+}
+
 
 const jobController = {
     allJobs,
-    job
+    job,
+    generateReview
 }
 
 module.exports = { jobController }
