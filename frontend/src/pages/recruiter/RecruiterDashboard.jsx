@@ -215,14 +215,14 @@ const RecruiterDashboard = () => {
             className={`max-w-66 md:w-66 p-5 bg-linear-to-b from-indigo-300 via-slate-100 to-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-30 transition-transform duration-300 ${showSidebar ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
           >
             <img
-              src="../public/resumeScreenerLogo.png"
+              src="/resumeScreenerLogo.png"
               alt="logo"
               className="mb-7 flex h-12"
             />
             <nav className="space-y-2 text-sm">
               <div className="px-3 items-center justify-start py-2 gap-3 rounded-lg flex text-slate-700 cursor-pointer bg-indigo-500/10 hover:bg-indigo-700/10 hover:text-indigo-600 transition">
                 <img
-                  src={`../public/recruiterAvatars/${recruiterAvatar}.png`}
+                  src={`/recruiterAvatars/${recruiterAvatar}.png`}
                   alt="recruiterAvatar"
                   className="h-15 w-15 rounded-full"
                 />
