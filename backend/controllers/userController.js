@@ -108,7 +108,7 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     try {
-        return res.clearCookie("token", { sameSite: process.env.ISPROD ? "none" : "lax", secure: process.env.ISPROD, httpOnly: true,path:'/' }).status(200).json({ message: "User logged out successfully!" })
+        return res.clearCookie("token", { sameSite: process.env.ISPROD ? "none" : "lax", secure: process.env.ISPROD, httpOnly: true, path: '/' }).status(200).json({ message: "User logged out successfully!" })
     } catch (err) {
         console.log(err)
         return res.status(500).json({ message: "Error logging out!" })

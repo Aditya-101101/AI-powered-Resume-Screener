@@ -28,6 +28,15 @@ app.use(cors({
     credentials: true,
 }));
 
+setInterval(() => {
+    const m = process.memoryUsage()
+    console.log(
+        `RSS: ${(m.rss / 1024 / 1024).toFixed(1)}MB | ` +
+        `Heap: ${(m.heapUsed / 1024 / 1024).toFixed(1)}MB`
+    )
+}, 5000)
+
+
 app.use("/user", checkUserAuth("token"), userRoute);
 app.use("/recruiter", checkRecruiterAuth("token"), recruiterRoute);
 app.use("/jobs", jobRoute);
