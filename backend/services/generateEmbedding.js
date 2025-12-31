@@ -2,6 +2,7 @@ const dotenv = require('dotenv')
 const axios = require("axios");
 dotenv.config();
 
+const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
 // // Hard-coded model (same as your structure)
 // const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
 
@@ -39,7 +40,7 @@ dotenv.config();
 
 
 async function getEmbedding(texts) {
-  const apiURL = `api-inference.huggingface.co/${MODEL_ID}`;
+  const apiURL = `api-inference.huggingface.co/models/${MODEL_ID}`;
   const headers = {
     "Authorization": `Bearer ${process.env.HF_API_KEY}`,
     "Content-Type": "application/json"
@@ -75,7 +76,6 @@ async function getEmbedding(texts) {
 
 // Example Usage
 // const HF_TOKEN = "YOUR_API_TOKEN";
-const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
 // const texts = ["Hello world!", "Hugging Face is great."];
 
 // generateEmbeddingsWithFetch(texts, HF_TOKEN, MODEL_ID).then(embeddings => {
