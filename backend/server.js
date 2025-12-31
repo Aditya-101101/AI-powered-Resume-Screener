@@ -18,12 +18,15 @@ ConnectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-    cors({
-        origin: process.env.CORS_ORIGIN,
-        credentials: true,
-    })
-)
+const allowedOrigins = [
+    process.env.CORS_ORIGIN,
+    process.env.CORS_ORIGIN_DEV
+].filter(Boolean);
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true,
+}));
 
 app.use("/user", checkUserAuth("token"), userRoute);
 app.use("/recruiter", checkRecruiterAuth("token"), recruiterRoute);
