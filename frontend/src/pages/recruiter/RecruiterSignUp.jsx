@@ -198,7 +198,7 @@ const RecruiterSignUp = () => {
                 {Array.from({ length: 6 }).map((_, i) => {
                   const avatar = `recruiterAvatar_${i + 1}`;
                   return (
-                    <img
+                    avatar && <img
                       key={avatar}
                       src={`/recruiterAvatars/${avatar}.png`}
                       alt={avatar}

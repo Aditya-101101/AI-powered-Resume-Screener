@@ -221,11 +221,11 @@ const RecruiterDashboard = () => {
             />
             <nav className="space-y-2 text-sm">
               <div className="px-3 items-center justify-start py-2 gap-3 rounded-lg flex text-slate-700 cursor-pointer bg-indigo-500/10 hover:bg-indigo-700/10 hover:text-indigo-600 transition">
-                <img
+               {recruiterAvatar&&<img
                   src={`/recruiterAvatars/${recruiterAvatar}.png`}
                   alt="recruiterAvatar"
                   className="h-15 w-15 rounded-full"
-                />
+                />}
                 <span className="text-xl font-semibold wrap-break-word">
                   {recruiterName}
                 </span>

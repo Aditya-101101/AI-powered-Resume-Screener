@@ -199,7 +199,7 @@ const UserSignUp = () => {
                                 {Array.from({ length: 6 }).map((_, i) => {
                                     const avatar = `userAvatar_${i + 1}`;
                                     return (
-                                        <img
+                                        avatar && <img
                                             key={avatar}
                                             src={`/userAvatars/${avatar}.png`}
                                             alt={avatar}
