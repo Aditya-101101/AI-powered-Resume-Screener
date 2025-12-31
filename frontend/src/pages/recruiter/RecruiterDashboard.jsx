@@ -290,7 +290,7 @@ const RecruiterDashboard = () => {
                 onClick={() => setShowSidebar(true)}
                 className="lg:hidden mr-4 px-1 py-0.5 rounded-lg  text-white text-sm shadow"
               >
-                <img src="../src/assets/menuIcon.png" alt="menu" />
+                <img src="/assets/menuIcon.png" alt="menu" />
               </button>
 
               <h1 className="text-sm font-semibold text-slate-700">

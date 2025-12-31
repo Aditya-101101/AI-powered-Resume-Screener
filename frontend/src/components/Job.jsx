@@ -192,7 +192,7 @@ const Job = ({ closeJob, job }) => {
 
             <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200 bg-slate-50">
               <h2 className="text-lg flex gap-5 font-semibold text-slate-800">
-                <button className='block sm:hidden' onClick={() => setShowJob(true)}><img src="../src/assets/menuIcon.png" alt="menu" /></button>
+                <button className='block sm:hidden' onClick={() => setShowJob(true)}><img src="/assets/menuIcon.png" alt="menu" /></button>
                 Applications
               </h2>
 

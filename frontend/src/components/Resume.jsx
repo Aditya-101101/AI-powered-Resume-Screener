@@ -180,7 +180,7 @@ const Resume = ({ closeResume, Application }) => {
 
             <div className="h-14 px-5 flex items-center justify-between 
                         border-b border-slate-200 bg-white">
-              <button className='block lg:hidden' onClick={() => setShowOptions(true)}><img src="../src/assets/menuIcon.png" alt="menu" /></button>
+              <button className='block lg:hidden' onClick={() => setShowOptions(true)}><img src="/assets/menuIcon.png" alt="menu" /></button>
               <h2 className="text-lg font-semibold text-slate-800">
                 Resume
               </h2>
