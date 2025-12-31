@@ -1,27 +1,29 @@
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
 
-const HF_URL =
-  "https://router.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
+export async function getEmbedding(text) {
+  const response = await fetch(
+    "https://router.huggingface.co/hf-inference/models/intfloat/multilingual-e5-large/pipeline/feature-extraction",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.HF_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: text
+      }),
+    }
+  );
 
-async function getEmbedding(text) {
-  const res = await fetch(HF_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.HF_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      inputs: text.slice(0, 3000)
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`HF ${res.status}: ${err}`);
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`HF ${response.status}: ${err}`);
   }
 
-  return await res.json(); // number[]
+  const result = await response.json();
+  return result[0]; // embedding vector
 }
+
 
 module.exports = { getEmbedding };
