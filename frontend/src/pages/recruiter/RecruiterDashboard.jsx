@@ -133,7 +133,6 @@ const RecruiterDashboard = () => {
   };
 
   const handleShowJob = (job) => {
-    console.log(job);
     setJobUnderReview(job);
   };
 

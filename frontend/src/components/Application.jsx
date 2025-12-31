@@ -8,7 +8,6 @@ const MAX_SKILLS = 5
 
 const Application = ({ job, closeApplication }) => {
 
-    console.log(job)
     const [resume, setResume] = useState(null)
     const [showerror, setshowError] = useState(false)
     const [error, setError] = useState({ code: null, message: "" })
@@ -32,7 +31,6 @@ const Application = ({ job, closeApplication }) => {
         const data = new FormData()
         data.append("resume", resume)
         data.append("jobId", job.id)
-        console.log(job.id)
         try {
             const response = await api.post('/user/application', data)
             if (response.status === 201) {
@@ -86,7 +84,7 @@ const Application = ({ job, closeApplication }) => {
             </div>
             <div className="flex flex-row sm:flex-col h-full w-full sm:max-w-[60%] lg:max-w-1/3 rounded-2xl overflow-hidden bg-white shadow-md">
 
-             
+
                 <div className="h-full sm:h-56 lg:h-50 w-0 sm:w-full overflow-hidden bg-slate-800 shrink-0">
                     <img
                         src={`${job.jobCover}`}
@@ -95,10 +93,10 @@ const Application = ({ job, closeApplication }) => {
                     />
                 </div>
 
-              
+
                 <div className="flex flex-col flex-1 min-h-0 p-5 pt-3 sm:px-3 gap-4">
 
-                 
+
                     <div>
                         <h2 className="text-xl font-semibold leading-tight">
                             {job.title}
@@ -106,7 +104,7 @@ const Application = ({ job, closeApplication }) => {
                         <p className="text-sm text-slate-500">Job opening</p>
                     </div>
 
-                    
+
                     <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
 
                         <div className="h-60 block sm:hidden w-full bg-slate-800 shrink-0">

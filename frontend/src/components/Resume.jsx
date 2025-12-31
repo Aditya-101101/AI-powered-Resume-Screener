@@ -6,7 +6,7 @@ import { useState } from 'react'
 
 const Resume = ({ closeResume, Application }) => {
 
- 
+
   const [showerror, setshowError] = useState(false)
   const [error, setError] = useState({ code: null, message: "" })
   const [showOptions, setShowOptions] = useState(false)
@@ -177,7 +177,7 @@ const Resume = ({ closeResume, Application }) => {
           </div>
 
           <div className={`${showOptions ? "hidden sm:flex" : "flex"} flex-1 flex-col`}>
-            
+
             <div className="h-14 px-5 flex items-center justify-between 
                         border-b border-slate-200 bg-white">
               <button className='block lg:hidden' onClick={() => setShowOptions(true)}><img src="../src/assets/menuIcon.png" alt="menu" /></button>

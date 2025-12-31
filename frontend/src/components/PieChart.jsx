@@ -34,7 +34,7 @@ const ApplicationStatusPie = ({ stats }) => {
           "#ef4444", // Rejected
         ],
         borderColor: "#ffffff",
-        borderWidth:0,
+        borderWidth: 0,
         cutout: "60%",
       },
     ],

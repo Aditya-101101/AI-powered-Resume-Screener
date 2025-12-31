@@ -9,7 +9,6 @@ const MAX_SKILLS = 8
 
 
 const Job = ({ closeJob, job }) => {
-  // console.log(job)
   const [showerror, setshowError] = useState(false)
   const [error, setError] = useState({ code: null, message: "" })
   const [applications, setApplications] = useState([])
@@ -22,7 +21,6 @@ const Job = ({ closeJob, job }) => {
     try {
       const response = await api.get(`/jobs/applications?jobId=${job.id}&page=${applicationPage}`)
       if (response.status === 200) {
-        // console.log(response.data.applications)
         const paginationDetails = response.data.pagination
         setApplicationPageCount(paginationDetails.pageCount)
         setApplications(response.data.applications)
@@ -108,11 +106,11 @@ const Job = ({ closeJob, job }) => {
 
         <div className="h-full w-full max-w-7xl rounded-2xl bg-white shadow-2xl flex overflow-hidden">
 
-        
+
           <div className={`${showJob ? "flex" : "hidden"} sm:flex justify-between ${showJob ? "w-full sm:w-[40%]" : "md:w-[40%] sm:w-[45%] "} border-r border-slate-200 
                       bg-slate-50 p-5 flex-col`}>
 
-           
+
             <div className='w-full pb-2 flex justify-between pl-5'>
               <span className='font-semibold text-xl'>Job</span>
               <button className="p-1 sm:hidden rounded-md hover:bg-red-100 transition" onClick={() => setShowJob(false)}>✕</button>
@@ -125,7 +123,7 @@ const Job = ({ closeJob, job }) => {
               />
             </div>
 
-           
+
             <div className="flex-1 overflow-y-auto p-5 pb-1 flex flex-col gap-4">
 
               <div>
@@ -166,7 +164,7 @@ const Job = ({ closeJob, job }) => {
                 </div>
               </div>
 
-              
+
               <div className="mt-auto pt-4 border-t border-slate-200 flex items-center justify-between shrink-0">
                 <div className="text-sm text-slate-600">
                   Experience:{" "}
@@ -188,10 +186,10 @@ const Job = ({ closeJob, job }) => {
             </div>
           </div>
 
-     
+
           <div className={`${showJob ? "hidden sm:flex" : "flex"} flex-1 flex-col`}>
 
-            
+
             <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200 bg-slate-50">
               <h2 className="text-lg flex gap-5 font-semibold text-slate-800">
                 <button className='block sm:hidden' onClick={() => setShowJob(true)}><img src="../src/assets/menuIcon.png" alt="menu" /></button>
