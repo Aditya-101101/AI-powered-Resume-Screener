@@ -1,14 +1,13 @@
-// embedding.js
 const axios = require("axios");
 
 const HF_EMBEDDING_URL =
-  "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2";
+  "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2";
 
 async function getEmbedding(text) {
   const res = await axios.post(
     HF_EMBEDDING_URL,
     {
-      inputs: text.slice(0, 3000), // 👈 wrapping happens here
+      inputs: text.slice(0, 3000),
     },
     {
       headers: {
@@ -19,8 +18,8 @@ async function getEmbedding(text) {
     }
   );
 
-  const data = res.data;
-  return Array.isArray(data[0]) ? data[0] : data;
+  // Response shape: [[float, float, ...]]
+  return res.data[0];
 }
 
 module.exports = { getEmbedding };
