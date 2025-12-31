@@ -1,16 +1,10 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
 const HF_URL =
-  "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
+  "https://router.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
 
 async function getEmbedding(text) {
-  // 🔒 Guard: fail fast if URL is ever wrong again
-  if (!HF_URL.startsWith("https://")) {
-    throw new Error("HF_URL is invalid: missing https://");
-  }
-
   const response = await fetch(HF_URL, {
     method: "POST",
     headers: {
@@ -28,7 +22,7 @@ async function getEmbedding(text) {
     throw new Error(`HF ${response.status}: ${err}`);
   }
 
-  return await response.json(); // embedding array
+  return await response.json(); // number[]
 }
 
 module.exports = { getEmbedding };
