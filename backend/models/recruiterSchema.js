@@ -17,7 +17,6 @@ const RecruiterSchema = new mongoose.Schema({
     },
     recruiterAvatar: {
         type: String,
-        default: '/uploads/profilePic.png'
     },
     role: {
         type: String,

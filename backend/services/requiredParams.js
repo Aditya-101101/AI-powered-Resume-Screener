@@ -1,112 +1,113 @@
+const { KNOWN_TECH } = require("./knownTech");
 
-function normalize(skill) {
-    return skill
+function normalize(text) {
+    return text
         .toLowerCase()
+
+
+        .replace(/[–—−]/g, " ")
+        .replace(/[’‘]/g, "'")
+        .replace(/[(){}\[\]]/g, " ")
+        .replace(/[•·]/g, " ")
+        .replace(/[,;]+/g, " ")
+
+        .replace(/\b([a-z]+)\.js\b/g, "$1")
+
+
+        .replace(/\bjava\s+script\b/g, "javascript")
+        .replace(/\btype\s+script\b/g, "typescript")
+        .replace(/\bmongo\s+db\b/g, "mongodb")
+        .replace(/\bpostgre\s+sql\b/g, "postgresql")
+        .replace(/\bmy\s+sql\b/g, "mysql")
+        .replace(/\bgit\s+hub\b/g, "github")
+        .replace(/\brestful\s+apis?\b/g, "rest api")
+        .replace(/\brest\s+apis?\b/g, "rest api")
+        .replace(/\bjson\s+web\s+tokens?\b/g, "jwt")
+        .replace(/\bfile\s+uploading\b/g, "file uploads")
+        .replace(/\bfile\s+handling\b/g, "file uploads")
+
+
         .replace(/\s+/g, " ")
-        .replace(/java script/g, "javascript")
-        .replace(/mongo db/g, "mongodb")
-        .replace(/tailwind css/g, "tailwindcss")
-        .replace(/rubyon rails/g, "ruby on rails")
-        .replace(/tensor flow/g, "tensorflow")
-        .replace(/py torch/g, "pytorch")
-        .replace(/j query/g, "jquery")
-        .replace(/\.js\b/g, ".js")
-        .replace(/[.]+$/, "")
         .trim();
 }
 
 
-function looksLikeSkill(token) {
-    if (!token) return false;
+function buildSkillMap(knownSkills) {
+    const map = new Map();
 
-    if (token.length < 1 || token.length > 25) return false;
+    for (const skill of knownSkills) {
+        map.set(normalize(skill), skill);
+    }
 
-    if (token.split(" ").length > 3) return false;
+    return map;
+}
 
-    if (/[,:;]/.test(token)) return false;
-    if (/\d+%/.test(token)) return false;
-    if (/\b(ing|ed)\b/i.test(token)) return false;
+const NORMALIZED_SKILL_MAP = buildSkillMap(KNOWN_TECH);
 
-    if (!/[a-zA-Z+#.]/.test(token)) return false;
 
-    if (!/^[a-zA-Z0-9+#. \-]+$/.test(token)) return false;
+function extractRelevantText(text) {
+    let capture = false;
+    const collected = [];
 
-    return true;
+    text.split("\n").forEach(line => {
+        const lower = line.toLowerCase().trim();
+
+        if (/^(skills|education|projects?)\b/.test(lower)) {
+            capture = true;
+            return;
+        }
+
+        if (capture) {
+            collected.push(line);
+        }
+    });
+
+    return collected.join(" ");
 }
 
 
-function looksLikeHumanName(skill) {
-    return /^[a-z]+ [a-z]+$/.test(skill);
-}
+function extractWordGroups(text) {
+    const words = text
+        .toLowerCase()
+        .split(/[^a-z0-9+#/]+/)
+        .filter(Boolean);
 
-function looksLikeSection(skill) {
-    return /\b(education|experience|projects|skills|achievements|social)\b/.test(skill);
-}
+    const groups = [];
 
-function looksLikeRole(skill) {
-    return /\b(engineer|developer|intern|manager)\b/.test(skill);
-}
+    for (let i = 0; i < words.length; i++) {
+        groups.push(words[i]);
+        if (i + 1 < words.length)
+            groups.push(words[i] + " " + words[i + 1]);
+        if (i + 2 < words.length)
+            groups.push(words[i] + " " + words[i + 1] + " " + words[i + 2]);
+    }
 
-function looksLikeHobby(skill) {
-    return /\b(chess|cricket|badminton|football|table-tennis)\b/.test(skill);
-}
-
-function looksLikeLocation(skill) {
-    return /\b(state|city|india|jharkhand|dhanbad|iit)\b/.test(skill);
-}
-
-function isGarbage(skill) {
-    if (/^project name\d*$/i.test(skill)) return true;
-
-    if (/hackathons?/i.test(skill)) return true;
-
-    return (
-        looksLikeHumanName(skill) ||
-        looksLikeSection(skill) ||
-        looksLikeRole(skill) ||
-        looksLikeHobby(skill) ||
-        looksLikeLocation(skill) ||
-        skill.split(" ").length > 3 ||
-        /\b(etc|ranks|engagements|performance)\b/.test(skill)
-    );
+    return groups;
 }
 
 function extractSkills(text) {
-    const skills = new Set();
+    const skillSet = new Set();
 
-    const tokens = text
-        .split(/[\n•,|]/)
-        .map(t => t.trim())
-        .filter(Boolean);
+    const relevantText = extractRelevantText(text);
+    const wordGroups = extractWordGroups(relevantText);
 
-    for (const token of tokens) {
-        if (!looksLikeSkill(token)) continue;
+    for (const group of wordGroups) {
+        const normalized = normalize(group);
 
-        const normalized = normalize(token);
-
-        if (normalized.length < 2) continue;
-        if (isGarbage(normalized)) continue;
-
-        skills.add(normalized);
+        if (NORMALIZED_SKILL_MAP.has(normalized)) {
+            skillSet.add(NORMALIZED_SKILL_MAP.get(normalized));
+        }
     }
 
-    return Array.from(skills);
+    return [...skillSet];
 }
-
 
 function extractExperience(text) {
     const years = text.match(/\b(19|20)\d{2}\b/g);
-
-    if (!years || years.some(y => y.includes("XX"))) {
-        return 0;
-    }
-
-    if (years.length < 2) return 0;
-
+    if (!years || years.length < 2) return 0;
     const nums = years.map(Number);
     return Math.max(...nums) - Math.min(...nums);
 }
-
 
 function extractSkillsAndExperience(text) {
     return {
@@ -115,4 +116,47 @@ function extractSkillsAndExperience(text) {
     };
 }
 
-module.exports = { extractSkillsAndExperience };
+function normalizeJobSkill(skill) {
+    return skill
+        .toLowerCase()
+
+
+        .replace(/[–—−]/g, " ")
+        .replace(/[’‘]/g, "'")
+        .replace(/[(){}\[\]]/g, " ")
+        .replace(/[•·]/g, " ")
+        .replace(/[,;]+/g, " ")
+
+
+        .replace(/\b([a-z]+)\.js\b/g, "$1")
+
+        .replace(/\bjava\s+script\b/g, "javascript")
+        .replace(/\btype\s+script\b/g, "typescript")
+        .replace(/\bmongo\s+db\b/g, "mongodb")
+        .replace(/\bpostgre\s+sql\b/g, "postgresql")
+        .replace(/\bmy\s+sql\b/g, "mysql")
+        .replace(/\bgit\s+hub\b/g, "github")
+        .replace(/\brestful\s+apis?\b/g, "rest api")
+        .replace(/\brest\s+apis?\b/g, "rest api")
+        .replace(/\bjson\s+web\s+tokens?\b/g, "jwt")
+        .replace(/\bfile\s+uploading\b/g, "file uploads")
+        .replace(/\bfile\s+handling\b/g, "file uploads")
+
+        .replace(/\s+/g, " ")
+        .trim();
+}
+function normalizeJobSkills(jobSkills) {
+    const normalizedSet = new Set();
+
+    for (const skill of jobSkills) {
+        const normalized = normalizeJobSkill(skill);
+        if (normalized) {
+            normalizedSet.add(normalized);
+        }
+    }
+
+    return [...normalizedSet];
+}
+
+
+module.exports = { extractSkillsAndExperience, normalizeJobSkills };

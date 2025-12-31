@@ -48,7 +48,7 @@ const UserDashboard = () => {
   const [jobPage, setJobPage] = useState(1);
 
   const getTheme = (status) => {
-    // console.log(status)
+
     if (status === "Applied" || status === "UnderReview")
       return "bg-indigo-50 text-indigo-600  border-indigo-100";
     else if (status === "Accepted")
@@ -272,21 +272,10 @@ const UserDashboard = () => {
               />
             )}
             <header
-              className=" min-w-full
-                            min-h-14 px-5 flex items-center
-                            bg-linear-to-r from-teal-500/20 via-cyan-400/10 to-transparent
-                            border-b border-slate-200
-                            backdrop-blur-md
-                        "
-            >
+              className=" min-w-full min-h-14 px-5 flex items-center bg-linear-to-r from-teal-500/20 via-cyan-400/10 to-transparent border-b border-slate-200 backdrop-blur-md">
               <button
                 onClick={() => setShowSidebar(true)}
-                className="
-                                    lg:hidden mr-4 px-1 py-0.5
-                                    rounded-lg 
-                                    text-white text-sm shadow
-                                "
-              >
+                className="lg:hidden mr-4 px-1 py-0.5  rounded-lg  text-white text-sm shadow">
                 <img src="../src/assets/menuIcon.png" alt="menu" />
               </button>
 
@@ -304,7 +293,7 @@ const UserDashboard = () => {
                   className="flex h-full min-w-0 flex-col md:rounded-2xl md:p-0 overflow-y-auto
     bg-white/85 backdrop-blur-xl shadow-lg lg:overflow-hidden"
                 >
-                  {/* Header (compact) */}
+
                   <div className="px-5 py-3 border-b min-w-0 border-slate-200/60 shrink-0">
                     <h2 className="text-lg font-semibold text-slate-800">
                       Overview
@@ -316,7 +305,7 @@ const UserDashboard = () => {
 
                   <div className="overflow-y-auto lg:overflow-y-hidden min-w-0 h-full ">
 
-                    {/* Stat Cards (compact spacing) */}
+
                     <div className="px-1 md:px-5 py-3 lg:pt-1 min-w-0 shrink-0">
                       <div className="flex flex-col sm:flex-row gap-4">
                         <StatCard
@@ -340,10 +329,10 @@ const UserDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Insights (ONE scrollable area) */}
+
                     <div className="flex-1 px-3 sm:px-5 pb-2 overflow-y-auto">
                       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-                        {/* Pie Chart (fixed height) */}
+
                         <div
                           className="lg:col-span-3 rounded-2xl
                         bg-linear-to-br from-white/80 to-slate-50/60
@@ -363,7 +352,7 @@ const UserDashboard = () => {
                             />
                           </div>
 
-                          {/* Compact legend */}
+
                           <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                             <span className="flex items-center gap-2 text-indigo-600">
                               <span className="w-2 h-2 rounded-full bg-indigo-500" />
@@ -384,7 +373,7 @@ const UserDashboard = () => {
                           </div>
                         </div>
 
-                        {/* ATS Summary (compressed) */}
+
                         <div
                           className="lg:col-span-2 rounded-2xl
                         bg-linear-to-br from-indigo-50 via-white to-cyan-50
@@ -432,7 +421,7 @@ const UserDashboard = () => {
             {content === "jobs" && (
               <section className="h-[90%] md:flex-1 px-5 py-4 bg-linear-to-br from-slate-50 via-white to-cyan-50">
                 <div className="h-full md:flex-1 flex flex-col rounded-2xl bg-white/85 backdrop-blur-xl shadow-lg border border-slate-200">
-                  {/* Header */}
+
                   <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-slate-800">
                       Jobs
@@ -442,7 +431,7 @@ const UserDashboard = () => {
                     </span>
                   </div>
 
-                  {/* Jobs */}
+
                   <div className="max-h-[90%] md:flex-1  overflow-y-auto px-5 py-4">
                     {jobs.length === 0 ? (
                       <div className="text-lg font-semibold text-slate-400 text-center mt-24">
@@ -456,14 +445,14 @@ const UserDashboard = () => {
                             className="group relative rounded-xl bg-white border border-slate-200 shadow-sm 
                          hover:shadow-md hover:-translate-y-0.5 transition-all"
                           >
-                            {/* Accent */}
+
                             <div
                               className="absolute left-0 top-0 h-full w-1 rounded-l-xl 
                               bg-linear-to-b from-indigo-500 to-cyan-400"
                             />
 
                             <div className="p-3 h-full pl-4 flex justify-between  flex-col gap-2">
-                              {/* Title */}
+
                               <div className="flex flex-col gap-2">
                                 <h3
                                   className="text-sm font-semibold text-slate-800 truncate 
@@ -472,12 +461,12 @@ const UserDashboard = () => {
                                   {job.title}
                                 </h3>
 
-                                {/* Description */}
+
                                 <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
                                   {job.desc}
                                 </p>
 
-                                {/* Skills */}
+
                                 <div className="flex flex-wrap gap-1.5">
                                   {job.skillsRequired
                                     .slice(0, MAX_SKILLS)
@@ -502,7 +491,7 @@ const UserDashboard = () => {
                                 </div>
                               </div>
 
-                              {/* Footer */}
+
                               <div className="pt-2 mt-1 flex items-center justify-between border-t border-slate-100">
                                 <span className="text-[11px] font-medium text-slate-500">
                                   {job.experienceRequired} yr exp
@@ -523,7 +512,7 @@ const UserDashboard = () => {
                       </div>
                     )}
                   </div>
-                  {/* Pagination */}
+
                   <div className="py-3 mt-auto flex justify-center border-t border-slate-200">
                     <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-xl shadow-sm border">
                       <button
@@ -577,14 +566,14 @@ const UserDashboard = () => {
             {content === "applications" && (
               <section className="h-[90%] md:flex-1 px-5 py-4 bg-linear-to-br from-slate-50 via-white to-cyan-50">
                 <div className="h-full flex flex-col rounded-2xl bg-white/85 backdrop-blur-xl shadow-lg border border-slate-200">
-                  {/* Header */}
+
                   <div className="px-5 py-3 border-b border-slate-200">
                     <h2 className="text-lg font-semibold text-slate-800">
                       Applications
                     </h2>
                   </div>
 
-                  {/* Stats */}
+
                   <div className="max-h-[90%] md:flex-1   w-full overflow-y-scroll">
                     <div className="px-5 py-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -609,7 +598,6 @@ const UserDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Applications Grid */}
                     <div className="flex-1 overflow-y-auto px-5 pb-5">
                       {applications.length === 0 ? (
                         <div className="text-lg font-semibold text-slate-400 text-center mt-24">
@@ -624,7 +612,7 @@ const UserDashboard = () => {
                                                 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 
                                                 transition-all flex flex-col"
                             >
-                              {/* Job Title */}
+
                               <div className="mb-3">
                                 <p className="text-xs text-slate-500 mb-0.5">
                                   Job Title
@@ -634,7 +622,7 @@ const UserDashboard = () => {
                                 </p>
                               </div>
 
-                              {/* Status + ATS */}
+
                               <div className="flex items-center justify-between mb-4">
                                 <span
                                   className={`px-2.5 py-1 text-xs font-medium rounded-full 
@@ -651,7 +639,6 @@ const UserDashboard = () => {
                                 </span>
                               </div>
 
-                              {/* CTA */}
                               <a
                                 href={application.resume}
                                 target="_blank"
@@ -670,7 +657,7 @@ const UserDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Pagination */}
+
                   <div className="py-3 mt-auto flex justify-center border-t border-slate-200">
                     <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-xl shadow-sm border">
                       <button

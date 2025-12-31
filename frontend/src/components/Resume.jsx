@@ -6,12 +6,14 @@ import { useState } from 'react'
 
 const Resume = ({ closeResume, Application }) => {
 
-  // console.log(Application)
+ 
   const [showerror, setshowError] = useState(false)
   const [error, setError] = useState({ code: null, message: "" })
   const [showOptions, setShowOptions] = useState(false)
   const [review, setReview] = useState({
-
+    meta: {},
+    numericReview: {},
+    textualReview: {}
   })
 
   const onClose = () => {
@@ -22,6 +24,10 @@ const Resume = ({ closeResume, Application }) => {
     const data = { application: Application }
     try {
       const response = await api.post('/jobs/application-review', data)
+      if (response.status === 201) {
+        console.log(response.data.review)
+        setReview(response.data.review)
+      }
 
     } catch (err) {
       setshowError(true)
@@ -95,9 +101,74 @@ const Resume = ({ closeResume, Application }) => {
                 {showOptions && <button className="p-1 rounded-md hover:bg-red-100 transition" onClick={() => setShowOptions(false)}>✕</button>}
 
               </h3>
-              <p className="text-xs text-slate-500 overflow-auto leading-relaxed">
+              <div className="space-y-4 text-xs text-slate-600">
 
-              </p>
+
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Overall Verdict
+                  </p>
+                  <p
+                    className={`mt-1 text-sm font-semibold ${review.textualReview.overall === "Strong Fit"
+                      ? "text-green-600"
+                      : review.textualReview.overall === "Moderate Fit"
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                      }`}
+                  >
+                    {review.textualReview.overall || "—"}
+                  </p>
+                </div>
+
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-lg bg-white p-2 text-center shadow-sm">
+                    <p className="text-[10px] text-slate-400">Experience</p>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {review.numericReview.experienceScore ?? "-"} / 10
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-2 text-center shadow-sm">
+                    <p className="text-[10px] text-slate-400">Skills</p>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {review.numericReview.skillsScore ?? "-"} / 20
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-2 text-center shadow-sm">
+                    <p className="text-[10px] text-slate-400">Total</p>
+                    <p className="text-sm font-semibold text-slate-800">
+                      {review.numericReview.totalScore ?? "-"} / 30
+                    </p>
+                  </div>
+                </div>
+
+
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Experience Review
+                  </p>
+                  <p className="mt-1 text-slate-500 leading-relaxed">
+                    {review.textualReview.experience || "No experience review available."}
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Skills Review
+                  </p>
+                  <p className="mt-1 text-slate-500 leading-relaxed">
+                    {review.textualReview.skills || "No skills review available."}
+                  </p>
+                  <p className="mt-2 text-[11px] text-slate-400">
+                    Matched {review.meta.matchedSkills ?? 0} of{" "}
+                    {review.meta.totalSkills ?? 0} required skills
+                  </p>
+                </div>
+
+              </div>
+
             </div>
             <div className='flex w-full justify-around'>
               <button onClick={() => handleSetStatus("Accepted")} className='bg-green-200 text-green-400 px-4 py-1 rounded hover:outline-1 hover:cursor-pointer hover:scale-95'>Accept</button>
@@ -105,10 +176,8 @@ const Resume = ({ closeResume, Application }) => {
             </div>
           </div>
 
-          {/* RIGHT — PREVIEW */}
           <div className={`${showOptions ? "hidden sm:flex" : "flex"} flex-1 flex-col`}>
-
-            {/* Header */}
+            
             <div className="h-14 px-5 flex items-center justify-between 
                         border-b border-slate-200 bg-white">
               <button className='block lg:hidden' onClick={() => setShowOptions(true)}><img src="../src/assets/menuIcon.png" alt="menu" /></button>
@@ -124,7 +193,6 @@ const Resume = ({ closeResume, Application }) => {
               </button>
             </div>
 
-            {/* Iframe */}
             <div className="flex-1 bg-slate-100 p-3">
               <div className="h-full w-full rounded-xl overflow-hidden 
                           bg-white shadow-inner border border-slate-200">

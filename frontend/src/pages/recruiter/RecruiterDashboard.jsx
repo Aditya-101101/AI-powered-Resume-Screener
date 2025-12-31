@@ -5,6 +5,7 @@ import Error from "../../components/Error";
 import { useNavigate } from "react-router-dom";
 import Job from "../../components/Job";
 import ApplicationsStatusBar from "../../components/BarGraph";
+import Loading from '../../components/Loading'
 
 const MAX_SKILLS = 5;
 
@@ -19,6 +20,7 @@ const RecruiterDashboard = () => {
   const [email, setEmail] = useState("");
   const [jobs, setJobs] = useState([]);
   const [content, setContent] = useState("overview");
+  const [loading, setLoading] = useState(false)
   const [applicationsStats, setApplicationStats] = useState({
     total: 0,
     accepted: 0,
@@ -149,6 +151,7 @@ const RecruiterDashboard = () => {
 
   const handleJobCreateFormSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true)
 
     if (!jobDetail.jobCover) {
       setshowError(true);
@@ -171,6 +174,7 @@ const RecruiterDashboard = () => {
     try {
       const response = await api.post("/recruiter/createJob", formData);
       if (response.status === 201) {
+        setContent("createJob");
         setJobDetail({
           title: "",
           desc: "",
@@ -179,7 +183,6 @@ const RecruiterDashboard = () => {
           jobCover: null,
         });
         alert("Job Created!");
-        setContent("createJob");
       }
     } catch (err) {
       setshowError(true);
@@ -196,8 +199,10 @@ const RecruiterDashboard = () => {
       }, 5000);
 
       console.log(err);
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="h-screen w-screen  bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff] flex items-center justify-center text-slate-800">
@@ -280,8 +285,8 @@ const RecruiterDashboard = () => {
           <main className="flex-1 h-full relative flex flex-col">
             <header
               className=" min-w-full min-h-14 px-5 flex items-center
-                            bg-linear-to-r from-teal-500/20 via-cyan-400/10 to-transparent
-                            border-b border-slate-200 backdrop-blur-md">
+              bg-linear-to-r from-teal-500/20 via-cyan-400/10 to-transparent
+              border-b border-slate-200 backdrop-blur-md">
               <button
                 onClick={() => setShowSidebar(true)}
                 className="lg:hidden mr-4 px-1 py-0.5 rounded-lg  text-white text-sm shadow"
@@ -297,14 +302,14 @@ const RecruiterDashboard = () => {
             {content === "overview" && (
               <section
                 className="flex-1 md:h-[88%] md:w-full min-w-0 md:px-5 md:py-3 box-border overflow-y-auto
-  bg-linear-to-br from-slate-50 via-white to-cyan-50"
+              bg-linear-to-br from-slate-50 via-white to-cyan-50"
               >
-                {/* Card container */}
+
                 <div
                   className="flex h-full min-w-0 flex-col md:rounded-2xl md:p-0 overflow-y-auto
-    bg-white/85 backdrop-blur-xl shadow-lg lg:overflow-hidden"
+                  bg-white/85 backdrop-blur-xl shadow-lg lg:overflow-hidden"
                 >
-                  {/* ================= HEADER ================= */}
+
                   <div className="px-5 py-3 border-b min-w-0 border-slate-200/60 shrink-0">
                     <h2 className="text-lg font-semibold text-slate-800">
                       Overview
@@ -314,7 +319,7 @@ const RecruiterDashboard = () => {
                     </p>
                   </div>
 
-                  {/* ================= KPIs ================= */}
+
                   <div className="overflow-y-auto lg:overflow-y-hidden min-w-0 h-full ">
 
                     <div className="px-1 md:px-5 py-3 lg:pt-1 min-w-0 shrink-0">
@@ -340,15 +345,14 @@ const RecruiterDashboard = () => {
                       </div>
                     </div>
 
-                    {/* ================= CHARTS (TAKES ALL REMAINING SPACE) ================= */}
                     <div className="flex-1 min-w-0 md:overflow-y-auto min-h-0 px-1 md:px-5 pb-5 lg:pb-2 ">
                       <div className="flex flex-col min-w-0 lg:flex-row gap-5 min-h-0 lg:h-full ">
 
-                        {/* ===== Status Chart (2/3 width, full height) ===== */}
+
                         <div
                           className="lg:flex-2 flex flex-col md:min-h-65 lg:min-h-0 min-w-0
-                        rounded-2xl bg-linear-to-br from-white/90 to-slate-50/60 
-          shadow-md md:px-5 md:py-3 hover:shadow-lg transition"
+                          rounded-2xl bg-linear-to-br from-white/90 to-slate-50/60 
+                          shadow-md md:px-5 md:py-3 hover:shadow-lg transition"
                         >
                           <div className="shrink-0 px-5">
                             <h3 className="text-sm font-semibold text-slate-700">
@@ -359,7 +363,6 @@ const RecruiterDashboard = () => {
                             </p>
                           </div>
 
-                          {/* Chart fills remaining height */}
                           <div className="flex-auto min-w-0 min-h-30 lg:min-h-35 xl:min-h-55 mt-3">
                             <ApplicationsStatusBar
                               stats={{
@@ -372,11 +375,11 @@ const RecruiterDashboard = () => {
                           </div>
                         </div>
 
-                        {/* ===== Today KPI (1/3 width, full height) ===== */}
+
                         <div
                           className="lg:flex-1 min-h-30 flex flex-col justify-between md:min-h-27 lg:min-h-0
-                        rounded-2xl bg-linear-to-br from-cyan-50/80 to-teal-50/60 min-w-0
-          shadow-md p-3 mx-5 md:mx-0 md:p-5 hover:shadow-lg transition"
+                          rounded-2xl bg-linear-to-br from-cyan-50/80 to-teal-50/60 min-w-0
+                          shadow-md p-3 mx-5 md:mx-0 md:p-5 hover:shadow-lg transition"
                         >
                           <div>
                             <h3 className="text-sm font-semibold text-slate-700">
@@ -431,7 +434,7 @@ const RecruiterDashboard = () => {
                           <div
                             key={job._id}
                             className="group relative rounded-xl bg-white border border-slate-200 shadow-sm 
-                         hover:shadow-md hover:-translate-y-0.5 transition-all"
+                          hover:shadow-md hover:-translate-y-0.5 transition-all"
                           >
 
                             <div
@@ -444,7 +447,7 @@ const RecruiterDashboard = () => {
                               <div className="flex flex-col gap-2">
                                 <h3
                                   className="text-sm font-semibold text-slate-800 truncate 
-                               group-hover:text-indigo-600 transition"
+                                  group-hover:text-indigo-600 transition"
                                 >
                                   {job.title}
                                 </h3>
@@ -461,7 +464,7 @@ const RecruiterDashboard = () => {
                                       <span
                                         key={skill}
                                         className="px-2 py-0.5 text-[10px] rounded-full 
-                                                                bg-indigo-50 text-indigo-600 border border-indigo-100"
+                                      bg-indigo-50 text-indigo-600 border border-indigo-100"
                                       >
                                         {skill}
                                       </span>
@@ -470,7 +473,7 @@ const RecruiterDashboard = () => {
                                   {job.skillsRequired.length > MAX_SKILLS && (
                                     <span
                                       className="px-2 py-0.5 text-[10px] rounded-full 
-                                                                bg-slate-100 text-slate-600"
+                                    bg-slate-100 text-slate-600"
                                     >
                                       +{job.skillsRequired.length - MAX_SKILLS}
                                     </span>
@@ -487,9 +490,9 @@ const RecruiterDashboard = () => {
                                 <button
                                   onClick={() => handleShowJob(job)}
                                   className="px-2.5 py-1 text-[11px] font-semibold rounded-md 
-                               bg-indigo-600 text-white 
-                               hover:bg-indigo-700 
-                               active:scale-[0.97] transition"
+                                  bg-indigo-600 text-white 
+                                  hover:bg-indigo-700 
+                                  active:scale-[0.97] transition"
                                 >
                                   View Applications
                                 </button>
@@ -553,8 +556,8 @@ const RecruiterDashboard = () => {
                         disabled={jobPage === 1}
                         onClick={handleJobPagePrevious}
                         className="px-2 py-1 text-xs rounded-md 
-                     disabled:text-slate-400 disabled:cursor-not-allowed 
-                     hover:bg-slate-100 transition"
+                        disabled:text-slate-400 disabled:cursor-not-allowed 
+                        hover:bg-slate-100 transition"
                       >
                         ←
                       </button>
@@ -567,8 +570,8 @@ const RecruiterDashboard = () => {
                         disabled={jobPage === jobPageCount}
                         onClick={handleJobPageNext}
                         className="px-2 py-1 text-xs rounded-md 
-                     disabled:text-slate-400 disabled:cursor-not-allowed 
-                     hover:bg-slate-100 transition"
+                        disabled:text-slate-400 disabled:cursor-not-allowed 
+                        hover:bg-slate-100 transition"
                       >
                         →
                       </button>
@@ -577,10 +580,10 @@ const RecruiterDashboard = () => {
                         value={jobPage}
                         onChange={(e) => setJobPage(Number(e.target.value))}
                         className="ml-2 text-xs rounded-md border border-slate-300 
-                     px-2 py-1 cursor-pointer
-                     hover:border-indigo-400 
-                     focus:ring-2 focus:ring-indigo-300 
-                     transition"
+                        px-2 py-1 cursor-pointer
+                        hover:border-indigo-400 
+                        focus:ring-2 focus:ring-indigo-300 
+                        transition"
                       >
                         {Array.from({ length: jobPageCount || 10 }).map(
                           (_, index) => (
@@ -596,11 +599,12 @@ const RecruiterDashboard = () => {
               </section>
             )}
 
+            {loading && <Loading />}
             {content === "createJob" && (
               <section
-                className="flex-1 overflow-y-scroll md:overflow-hidden 
-                    px-4 py-4 
-                    bg-linear-to-br from-slate-50 via-white to-cyan-50"
+                className="flex-1 overflow-y-scroll md:overflow-hidden relative
+              px-4 py-4 
+              bg-linear-to-br from-slate-50 via-white to-cyan-50"
               >
 
                 <div

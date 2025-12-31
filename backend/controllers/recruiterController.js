@@ -38,7 +38,7 @@ const registerRecruiter = async (req, res) => {
         return res.status(400).json({ message: "please enter correct email" })
 
     if (!checkStrength(password))
-        return res.status(400).json({ message: "password too weak" })
+        return res.status(400).json({ message: "password too weak or short" })
 
     if (!recruiterAvatar)
         return res.status(400).json({ message: "Avatar is required" })
@@ -149,9 +149,6 @@ const createJob = async (req, res) => {
             ? [...new Set(skillsRequired.map(s => s.toLowerCase()))]
             : [];
 
-
-
-
         const jobEmbeddingData = JSON.stringify({
             title: title,
             skillsRequired: normalizedSkills || [],
@@ -220,7 +217,7 @@ const createJob = async (req, res) => {
     }
 }
 
-const JOBS_PER_PAGE = process.env.JOBS_PER_PAGE
+const JOBS_PER_PAGE = Number(process.env.JOBS_PER_PAGE)
 
 const recruiterData = async (req, res) => {
     const recruiter = req.recruiter
@@ -312,7 +309,7 @@ const recruiterData = async (req, res) => {
         const jobCountPromise = Job.countDocuments({ createdBy: recruiter.id })
         const jobOpenCountPromise = Job.countDocuments({ createdBy: recruiter.id, status: true })
         const jobCloseCountPromise = Job.countDocuments({ createdBy: recruiter.id, status: false })
-        const jobsPromise = Job.find({ createdBy: recruiter.id }).lean().sort({ status: -1 }).skip(skip).limit(JOBS_PER_PAGE)
+        const jobsPromise = Job.find({ createdBy: recruiter.id }).lean().sort({ status: -1, createdAt: -1 }).skip(skip).limit(JOBS_PER_PAGE)
 
         const [jobCount, jobs, jobsOpen, jobsClosed, jobsStats] = await Promise.all([jobCountPromise, jobsPromise, jobOpenCountPromise, jobCloseCountPromise, jobsStatsPromise])
 
@@ -325,7 +322,7 @@ const recruiterData = async (req, res) => {
             recruiterAvatar: recruiter.recruiterAvatar
         }
 
-
+        // console.log(jobsStats)
 
 
         let jobsData = jobs.map(job => ({
@@ -362,12 +359,13 @@ const recruiterData = async (req, res) => {
             applicationsRemainingToReview: 0,
             applicationsSubmittedToday: 0
         }
+        // console.log(applicationsStats)
 
-        applicationsStats.totalApplications = jobsData.reduce((acc, job) => acc + job.stats.totalApplications, 0)
-        applicationsStats.acceptedApplications = jobsData.reduce((acc, job) => acc + job.stats.acceptedApplications, 0)
-        applicationsStats.rejectedApplications = jobsData.reduce((acc, job) => acc + job.stats.rejectedApplications, 0)
-        applicationsStats.applicationsRemainingToReview = jobsData.reduce((acc, job) => acc + job.stats.applicationsRemainingToReview, 0)
-        applicationsStats.applicationsSubmittedToday = jobsData.reduce((acc, job) => acc + job.stats.applicationsSubmittedToday, 0)
+        applicationsStats.totalApplications = jobsStats.reduce((acc, job) => acc + job.totalApplications, 0)
+        applicationsStats.acceptedApplications = jobsStats.reduce((acc, job) => acc + job.acceptedApplications, 0)
+        applicationsStats.rejectedApplications = jobsStats.reduce((acc, job) => acc + job.rejectedApplications, 0)
+        applicationsStats.applicationsRemainingToReview = jobsStats.reduce((acc, job) => acc + job.applicationsRemainingToReview, 0)
+        applicationsStats.applicationsSubmittedToday = jobsStats.reduce((acc, job) => acc + job.applicationsSubmittedToday, 0)
 
         const pageCount = Math.ceil(jobCount / JOBS_PER_PAGE)
 

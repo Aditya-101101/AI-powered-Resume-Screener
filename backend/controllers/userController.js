@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
         return res.status(400).json({ message: "please enter correct email" })
 
     if (!checkStrength(password))
-        return res.status(400).json({ message: "password too weak" })
+        return res.status(400).json({ message: "password too weak or short" })
 
     if (!userAvatar)
         return res.status(400).json({ message: "User Avatar Required!" })
@@ -96,7 +96,7 @@ const loginUser = async (req, res) => {
 
         if (checkPassword) {
             const token = createProfile(existingUser)
-            return res.cookie("token", token, { sameSite: "lax", secure: true, httpOnly: true, maxAge: 10 * 86400 * 1000 }).status(200).json({ message: "User loggedin successfully" })
+            return res.cookie("token", token, { sameSite: process.env.ISPROD ? "none" : "lax", secure: process.env.ISPROD, httpOnly: true, maxAge: 10 * 86400 * 1000 }).status(200).json({ message: "User loggedin successfully" })
         }
 
         return res.status(401).json({ message: "please enter correct email or password" })
@@ -171,7 +171,7 @@ const uploadApplication = async (req, res) => {
         }
 
         const text = parsedResume.text;
-        console.log("TEXT LENGTH:", text?.length);
+        // console.log("TEXT LENGTH:", text?.length);
 
         if (!text || text.length < 100)
             return res.status(400).json({
@@ -188,7 +188,7 @@ const uploadApplication = async (req, res) => {
             extracted = await extractSkillsAndExperience(
                 cleanedText
             )
-            console.log(extracted)
+            // console.log(extracted)
         } catch (err) {
             console.error("Extraction error:", err);
             return res.status(500).json({
@@ -216,7 +216,7 @@ const uploadApplication = async (req, res) => {
         );
 
         const uploaded = await uploadOnCloudinary(filePath);
-        console.log(uploaded)
+        // console.log(uploaded)
         if (!uploaded?.secure_url)
             return res.status(500).json({ message: "Resume upload failed" });
 
@@ -260,7 +260,7 @@ const uploadApplication = async (req, res) => {
 };
 
 
-const APPLICATIONS_PER_PAGE = process.env.APPLICATIONS_PER_PAGE
+const APPLICATIONS_PER_PAGE = Number(process.env.APPLICATIONS_PER_PAGE)
 
 const userData = async (req, res) => {
     const user = req.user
@@ -285,12 +285,12 @@ const userData = async (req, res) => {
                 }
             }
         ]);
-        
+
         const applicationCountPromise = Application.countDocuments({ submittedBy: user.id })
         const acceptedCountPromise = Application.countDocuments({ submittedBy: user.id, status: "Accepted" })
         const rejectedCountPromise = Application.countDocuments({ submittedBy: user.id, status: "Rejected" })
         const underReviewCountPromise = Application.countDocuments({ submittedBy: user.id, status: "UnderReview" })
-        const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1 }).lean().populate('jobId', { title: 1, desc: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
+        const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1, createdAt: -1 }).lean().populate('jobId', { title: 1, desc: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
 
         const [applicationCount, applications, acceptedCount, rejectedCount, underReviewCount, atsScores] = await Promise.all([applicationCountPromise, applicationsPromise, acceptedCountPromise, rejectedCountPromise, underReviewCountPromise, atsScoresPromise])
 
@@ -300,7 +300,7 @@ const userData = async (req, res) => {
             minAts: 0
         };
 
-        console.log(atsStats)
+        // console.log(atsStats)
 
         const userData = {
             id: user.id,

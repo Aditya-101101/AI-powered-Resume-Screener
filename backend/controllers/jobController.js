@@ -30,7 +30,7 @@ const allJobs = async (req, res) => {
 
         if (!jobs || jobs.length === 0)
             return res.json({ jobs: [] });
- 
+
         // console.log(jobs)
         const pagination = {
             jobCount,
@@ -43,7 +43,7 @@ const allJobs = async (req, res) => {
     }
 }
 
-const APPLICATIONS_PER_PAGE = process.env.APPLICATIONS_PER_PAGE + 6
+const APPLICATIONS_PER_PAGE = Number(process.env.APPLICATIONS_PER_PAGE + 6)
 
 const job = async (req, res) => {
     const recruiter = req.recruiter
@@ -58,7 +58,7 @@ const job = async (req, res) => {
     if (!jobId)
         return res.status(400).json({ message: "wrong Request!" })
 
-    console.log(jobId)
+    // console.log(jobId)
     try {
         const skip = (page - 1) * APPLICATIONS_PER_PAGE
         const job = await Job.findOne({ _id: jobId, createdBy: recruiter.id })
@@ -120,10 +120,10 @@ const generateReview = async (req, res) => {
 
         const review = await generateApplicationReview(application.resume, job)
 
-        // if (!review)
-        //     return res.status(500).json({ message: "some error occured while generating review" })
+        if (!review)
+            return res.status(500).json({ message: "some error occured while generating review" })
 
-        return res.status(201).json({ review: "generating" })
+        return res.status(201).json({ review: review })
 
     } catch (err) {
         return res.status(500).json({ error: err })
