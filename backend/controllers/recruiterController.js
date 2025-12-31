@@ -87,7 +87,7 @@ const loginRecruiter = async (req, res) => {
 
         if (checkPassword) {
             const token = createProfile(existingRecruiter)
-            return res.cookie("token", token, { sameSite: "lax", secure: true, httpOnly: true, maxAge: 10 * 86400 * 1000 }).status(200).json({ message: "Recruiter loggedin successfully" })
+            return res.cookie("token", token, { sameSite: process.env.ISPROD ? "none" : "lax", secure: process.env.ISPROD, httpOnly: true, maxAge: 10 * 86400 * 1000 }).status(200).json({ message: "Recruiter loggedin successfully" })
         }
 
         return res.status(401).json({ message: "please enter correct email or password" })
@@ -99,7 +99,7 @@ const loginRecruiter = async (req, res) => {
 
 const logoutRecruiter = async (req, res) => {
     try {
-        return res.clearCookie("token").status(200).json({ message: "Recruiter logged out successfully!" })
+        return res.clearCookie("token", { sameSite: process.env.ISPROD ? "none" : "lax", secure: process.env.ISPROD, httpOnly: true, path: "/" }).status(200).json({ message: "Recruiter logged out successfully!" })
     } catch (err) {
         console.log(err)
         return res.status(500).json({ message: "Error logging out!" })
