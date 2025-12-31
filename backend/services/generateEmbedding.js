@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+const dotenv = require('dotenv');
 dotenv.config();
 
 export async function getEmbedding(text) {
@@ -22,7 +22,7 @@ export async function getEmbedding(text) {
   }
 
   const result = await response.json();
-  return result[0]; // embedding vector
+  return result[0];
 }
 
 
