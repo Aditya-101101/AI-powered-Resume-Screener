@@ -36,6 +36,8 @@ app.use("/jobs", jobRoute);
 app.get("/", checkUserAuth("token"), checkRecruiterAuth("token"), redirectController);
 
 
+
+
 app.use((err, req, res, next) => {
     console.error(err);
 
