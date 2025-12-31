@@ -1,31 +1,23 @@
-let pipeline
-let embedder
+const axios = require("axios");
 
-async function loadModel() {
-    if (!pipeline) {
-        const mod = await import("@xenova/transformers");
-        pipeline = mod.pipeline;
-    }
-
-    if (!embedder) {
-        console.log("Loading model...");
-        embedder = await pipeline(
-            "feature-extraction",
-            "Xenova/all-mpnet-base-v2"
-        );
-        console.log("Model loaded!");
-    }
-}
+const HF_API_URL =
+  "https://api-inference.huggingface.co/embeddings/sentence-transformers/all-MiniLM-L6-v2";
 
 async function getEmbedding(text) {
-    await loadModel();
+  const response = await axios.post(
+    HF_API_URL,
+    {
+      inputs: text.slice(0, 3000), 
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.HF_API_KEY}`,
+      },
+      timeout: 10000,
+    }
+  );
 
-    const output = await embedder(text, {
-        pooling: "mean",
-        normalize: true,
-    });
-
-    return Array.from(output.data);
+  return response.data[0]; 
 }
 
 module.exports = { getEmbedding };
