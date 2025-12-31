@@ -1,20 +1,20 @@
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
-export async function getEmbedding(text) {
-  const response = await fetch(
-    "https://router.huggingface.co/hf-inference/models/intfloat/multilingual-e5-large/pipeline/feature-extraction",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.HF_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: text
-      }),
-    }
-  );
+const HF_URL =
+  "https://router.huggingface.co/hf-inference/models/intfloat/multilingual-e5-large/pipeline/feature-extraction";
+
+async function getEmbedding(text) {
+  const response = await fetch(HF_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.HF_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      inputs: text,
+    }),
+  });
 
   if (!response.ok) {
     const err = await response.text();
@@ -22,8 +22,7 @@ export async function getEmbedding(text) {
   }
 
   const result = await response.json();
-  return result[0];
+  return result[0]; // embedding vector
 }
-
 
 module.exports = { getEmbedding };
