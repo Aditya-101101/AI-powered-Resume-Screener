@@ -1,19 +1,7 @@
-const normalizeVector = (v) => {
-  if (Array.isArray(v) && Array.isArray(v[0])) {
-    return v[0];
-  }
-  return v;
-};
-
 const checkSimilarity = (vec1, vec2) => {
-  vec1 = normalizeVector(vec1);
-  vec2 = normalizeVector(vec2);
-
+  // 1️⃣ Validate inputs
   if (!Array.isArray(vec1) || !Array.isArray(vec2)) {
-    throw new Error(
-      `Invalid vectors passed to checkSimilarity:
-       vec1=${typeof vec1}, vec2=${typeof vec2}`
-    );
+    throw new Error("checkSimilarity expects number[] vectors");
   }
 
   if (vec1.length !== vec2.length) {
@@ -22,6 +10,7 @@ const checkSimilarity = (vec1, vec2) => {
     );
   }
 
+  // 2️⃣ Cosine similarity
   let dot = 0;
   let magA = 0;
   let magB = 0;
@@ -31,6 +20,8 @@ const checkSimilarity = (vec1, vec2) => {
     magA += vec1[i] * vec1[i];
     magB += vec2[i] * vec2[i];
   }
+
+  if (magA === 0 || magB === 0) return 0;
 
   return dot / (Math.sqrt(magA) * Math.sqrt(magB));
 };

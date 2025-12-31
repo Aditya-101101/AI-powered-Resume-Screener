@@ -207,9 +207,22 @@ const uploadApplication = async (req, res) => {
         resumeJson.experience =
             Number.isFinite(exp) && exp >= 0 && exp <= 30 ? exp : 0;
 
-        const resumeEmbedding = await generateEmbedding(cleanedText);
+        // const resumeEmbedding = await generateEmbedding(cleanedText);
 
-        const similarity = checkSimilarity(resumeEmbedding, job.embedding);
+        // const similarity = checkSimilarity(resumeEmbedding, job.embedding); 
+        const resumeEmbedding = await generateEmbedding(
+            "passage: " + cleanedText
+        );
+
+        // Job embedding must already be stored as number[]
+        const jobEmbedding = job.embedding;
+        // OR job.embedding.vector (depending on schema)
+
+        // ✅ Similarity
+        const similarity = checkSimilarity(
+            resumeEmbedding,
+            jobEmbedding
+        );
 
         const atsScore = Math.round(
             Math.max(0, Number.isFinite(similarity) ? similarity : 0) * 100
