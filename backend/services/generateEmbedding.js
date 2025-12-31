@@ -1,14 +1,12 @@
 const axios = require("axios");
 
 const HF_EMBEDDING_URL =
-  "https://router.huggingface.co/hf-inference/embeddings/sentence-transformers/all-MiniLM-L6-v2";
+  "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2";
 
 async function getEmbedding(text) {
-  const response = await axios.post(
+  const res = await axios.post(
     HF_EMBEDDING_URL,
-    {
-      inputs: text.slice(0, 3000), // safe + optimal
-    },
+    text.slice(0, 3000), // plain text, not { inputs }
     {
       headers: {
         Authorization: `Bearer ${process.env.HF_API_KEY}`,
@@ -18,7 +16,9 @@ async function getEmbedding(text) {
     }
   );
 
-  return response.data[0];
+  // HF returns nested arrays → flatten
+  const vector = res.data[0] ?? res.data;
+  return vector;
 }
 
 module.exports = { getEmbedding };
