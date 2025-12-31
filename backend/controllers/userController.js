@@ -210,7 +210,7 @@ const uploadApplication = async (req, res) => {
         // const resumeEmbedding = await generateEmbedding(cleanedText);
 
         // const similarity = checkSimilarity(resumeEmbedding, job.embedding); 
-        const resumeEmbedding = await generateEmbedding(
+        const resumeEmbedding = await getEmbedding(
             "passage: " + cleanedText
         );
 

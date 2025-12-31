@@ -4,7 +4,7 @@ dotenv.config();
 const HF_URL =
   "https://router.huggingface.co/hf-inference/models/intfloat/multilingual-e5-large/pipeline/feature-extraction";
 
-async function generateEmbedding(text) {
+async function getEmbedding(text) {
   const response = await fetch(HF_URL, {
     method: "POST",
     headers: {
@@ -34,4 +34,4 @@ async function generateEmbedding(text) {
   throw new Error("Unexpected embedding response format");
 }
 
-module.exports = { generateEmbedding };
+module.exports = { getEmbedding };
