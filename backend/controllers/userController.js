@@ -219,6 +219,9 @@ const uploadApplication = async (req, res) => {
         // OR job.embedding.vector (depending on schema)
 
         // ✅ Similarity
+        if (!Array.isArray(resumeEmbedding) || !Array.isArray(jobEmbedding)) {
+            throw new Error("Invalid embeddings for similarity");
+        }
         const similarity = checkSimilarity(
             resumeEmbedding,
             jobEmbedding
