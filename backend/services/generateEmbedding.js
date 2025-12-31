@@ -1,85 +1,34 @@
-const dotenv = require('dotenv')
-const axios = require("axios");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
-// // Hard-coded model (same as your structure)
-// const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
+const HF_URL =
+  "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
 
-// // Correct embeddings endpoint
-// const HF_URL = "https://router.huggingface.co/hf-inference/embeddings";
-
-// async function getEmbedding(text) {
-//   try {
-//     const res = await axios.post(
-//       HF_URL,
-//       {
-//         model: MODEL_ID,              // 👈 model passed in body
-//         inputs: text.slice(0, 3000),  // 👈 same behavior
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${process.env.HF_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//         timeout: 10000,
-//       }
-//     );
-
-//     // Return raw embedding array (number[])
-//     return res.data.data[0].embedding;
-
-//   } catch (error) {
-//     console.error(
-//       "HF Error:",
-//       error.response ? error.response.data : error.message
-//     );
-//     throw error;
-//   }
-// }
-
-
-async function getEmbedding(texts) {
-  const apiURL = `api-inference.huggingface.co/models/${MODEL_ID}`;
-  const headers = {
-    "Authorization": `Bearer ${process.env.HF_API_KEY}`,
-    "Content-Type": "application/json"
-  };
-  
-  const payload = {
-    inputs: texts,
-    options: {
-      wait_for_model: true, // Wait if the model is loading
-      truncate: true
-    }
-  };
-
-  try {
-    const response = await fetch(apiURL, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result; // An array of embedding vectors
-
-  } catch (error) {
-    console.error("Could not generate embeddings:", error);
-    throw error;
+async function getEmbedding(text) {
+  // 🔒 Guard: fail fast if URL is ever wrong again
+  if (!HF_URL.startsWith("https://")) {
+    throw new Error("HF_URL is invalid: missing https://");
   }
+
+  const response = await fetch(HF_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.HF_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      inputs: text.slice(0, 3000),
+      options: { wait_for_model: true },
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`HF ${response.status}: ${err}`);
+  }
+
+  return await response.json(); // embedding array
 }
 
-// Example Usage
-// const HF_TOKEN = "YOUR_API_TOKEN";
-// const texts = ["Hello world!", "Hugging Face is great."];
-
-// generateEmbeddingsWithFetch(texts, HF_TOKEN, MODEL_ID).then(embeddings => {
-  //   console.log("Embeddings:", embeddings);
-  // });
-  
-  module.exports = { getEmbedding };
+module.exports = { getEmbedding };
