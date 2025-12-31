@@ -1,3 +1,4 @@
+// embedding.js
 const axios = require("axios");
 
 const HF_EMBEDDING_URL =
@@ -6,7 +7,9 @@ const HF_EMBEDDING_URL =
 async function getEmbedding(text) {
   const res = await axios.post(
     HF_EMBEDDING_URL,
-    text.slice(0, 3000), // plain text, not { inputs }
+    {
+      inputs: text.slice(0, 3000), // 👈 wrapping happens here
+    },
     {
       headers: {
         Authorization: `Bearer ${process.env.HF_API_KEY}`,
@@ -16,9 +19,8 @@ async function getEmbedding(text) {
     }
   );
 
-  // HF returns nested arrays → flatten
-  const vector = res.data[0] ?? res.data;
-  return vector;
+  const data = res.data;
+  return Array.isArray(data[0]) ? data[0] : data;
 }
 
 module.exports = { getEmbedding };
