@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import StatCard from "../../components/StatCard";
 import api from "../../api/axios";
 import Error from "../../components/Error";
 import { useNavigate } from "react-router-dom";
-import Job from "../../components/Job";
-import ApplicationsStatusBar from "../../components/BarGraph";
+const Job = lazy(() => import("../../components/Job"));
+const ApplicationsStatusBar = lazy(() => import("../../components/BarGraph"));
 import Loading from '../../components/Loading'
 
 const MAX_SKILLS = 5;
@@ -102,7 +102,11 @@ const RecruiterDashboard = () => {
 
   useEffect(() => {
     getRecruiterData();
-  }, [content, jobPage]);
+  }, []);
+
+  useEffect(() => {
+    getRecruiterData();
+  }, [jobPage]);
 
   const handleRecruiterLogout = async () => {
     try {
@@ -208,7 +212,12 @@ const RecruiterDashboard = () => {
       {showerror && <Error error={error} onClose={onClose} />}
 
       <div className="relative md:h-[95vh] md:w-[95vw] w-full h-full md:rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white/60 backdrop-blur-xl">
-        {jobUnderReview && <Job closeJob={closeJob} job={jobUnderReview} />}
+        {jobUnderReview && (
+          <Suspense fallback={null}>
+            <Job closeJob={closeJob} job={jobUnderReview} />
+          </Suspense>
+        )}
+
 
         <div className="flex w-full h-full">
           <aside
@@ -221,7 +230,7 @@ const RecruiterDashboard = () => {
             />
             <nav className="space-y-2 text-sm">
               <div className="px-3 items-center justify-start py-2 gap-3 rounded-lg flex text-slate-700 cursor-pointer bg-indigo-500/10 hover:bg-indigo-700/10 hover:text-indigo-600 transition">
-               {recruiterAvatar&&<img
+                {recruiterAvatar && <img
                   src={`/recruiterAvatars/${recruiterAvatar}.png`}
                   alt="recruiterAvatar"
                   className="h-15 w-15 rounded-full"
@@ -363,14 +372,16 @@ const RecruiterDashboard = () => {
                           </div>
 
                           <div className="flex-auto min-w-0 min-h-30 lg:min-h-35 xl:min-h-55 mt-3">
-                            <ApplicationsStatusBar
-                              stats={{
-                                applied: applicationsStats.total,
-                                underReview: applicationsStats.underReview,
-                                shortlisted: applicationsStats.accepted,
-                                rejected: applicationsStats.rejected,
-                              }}
-                            />
+                            <Suspense fallback={null}>
+                              <ApplicationsStatusBar
+                                stats={{
+                                  applied: applicationsStats.total,
+                                  underReview: applicationsStats.underReview,
+                                  shortlisted: applicationsStats.accepted,
+                                  rejected: applicationsStats.rejected,
+                                }}
+                              />
+                            </Suspense>
                           </div>
                         </div>
 

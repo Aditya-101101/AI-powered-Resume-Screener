@@ -3,8 +3,9 @@ import StatCard from "../../components/StatCard";
 import api from "../../api/axios";
 import Error from "../../components/Error";
 import { useNavigate } from "react-router-dom";
-import Application from "../../components/Application";
-import ApplicationStatusPie from "../../components/PieChart";
+import { lazy, Suspense } from "react";
+const Application = lazy(() => import("../../components/Application"));
+const ApplicationStatusPie = lazy(() => import("../../components/PieChart"));
 
 const MAX_SKILLS = 5;
 
@@ -114,7 +115,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     getUserData();
-  }, [content, applicationPage]);
+  }, [applicationPage]);
 
   const getJobs = async () => {
     try {
@@ -144,8 +145,10 @@ const UserDashboard = () => {
   };
 
   useEffect(() => {
-    getJobs();
-  }, [jobPage]);
+    if (content === "jobs") {
+      getJobs();
+    }
+  }, [content, jobPage]);
 
   const handleUserLogout = async () => {
     try {
@@ -204,7 +207,7 @@ const UserDashboard = () => {
             />
             <nav className="space-y-2 text-sm">
               <div className="px-3 items-center justify-start py-2 gap-3 rounded-lg flex text-slate-700 cursor-pointer bg-indigo-500/10 hover:bg-indigo-700/10 hover:text-indigo-600 transition">
-                {userAvatar&&<img
+                {userAvatar && <img
                   src={`/userAvatars/${userAvatar}.png`}
                   alt="userAvatar"
                   className="h-15 w-15 rounded-full"
@@ -266,10 +269,9 @@ const UserDashboard = () => {
 
           <main className="flex-1 relative flex flex-col">
             {showApplication && (
-              <Application
-                closeApplication={closeApplication}
-                job={jobDetail}
-              />
+              <Suspense fallback={null}>
+                <Application closeApplication={closeApplication} job={jobDetail} />
+              </Suspense>
             )}
             <header
               className=" min-w-full min-h-14 px-5 flex items-center bg-linear-to-r from-teal-500/20 via-cyan-400/10 to-transparent border-b border-slate-200 backdrop-blur-md">
@@ -340,16 +342,18 @@ const UserDashboard = () => {
                         flex flex-col items-center justify-center"
                         >
                           <div className="w-full h-55">
-                            <ApplicationStatusPie
-                              stats={{
-                                applied: applicationsStatusCount.totalCount,
-                                underReview:
-                                  applicationsStatusCount.underReviewCount,
-                                shortlisted:
-                                  applicationsStatusCount.acceptedCount,
-                                rejected: applicationsStatusCount.rejectedCount,
-                              }}
-                            />
+                            <Suspense fallback={null}>
+                              <ApplicationStatusPie
+                                stats={{
+                                  applied: applicationsStatusCount.totalCount,
+                                  underReview:
+                                    applicationsStatusCount.underReviewCount,
+                                  shortlisted:
+                                    applicationsStatusCount.acceptedCount,
+                                  rejected: applicationsStatusCount.rejectedCount,
+                                }}
+                              />
+                            </Suspense>
                           </div>
 
 
