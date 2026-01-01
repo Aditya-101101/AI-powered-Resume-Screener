@@ -2,6 +2,7 @@ import React from "react"
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import api from "../api/axios"
+import Footer from '../components/Footer_'
 
 const LandingPage = () => {
 
@@ -169,6 +170,8 @@ const LandingPage = () => {
                     </button>
                 </div>
             </section>
+
+            <Footer/>
 
         </div>
     )
