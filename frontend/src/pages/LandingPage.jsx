@@ -41,7 +41,7 @@ const LandingPage = () => {
     }
 
     return (
-        <div className="min-h-screen pb-10 bg-linear-to-br from-[#f7f8fb] via-[#eef1f7] to-[#e8ecf4] text-[#1e293b]">
+        <div className="min-h-screen bg-linear-to-br from-[#f7f8fb] via-[#eef1f7] to-[#e8ecf4] text-[#1e293b]">
 
             <nav className="flex justify-between items-center px-3 sm:px-12 py-6">
                 <h1 className="text-xl font-semibold tracking-wide">
