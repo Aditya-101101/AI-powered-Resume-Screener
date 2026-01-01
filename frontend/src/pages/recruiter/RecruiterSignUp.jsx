@@ -118,7 +118,9 @@ const RecruiterSignUp = () => {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              placeholder='use a-z , A-Z , 0-9 , @$#!%*?& , min-length-8'
               required
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$#!%*?&]).{8,}"
               className="mt-1 w-full rounded-lg bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-indigo-400"
             />
           </div>
