@@ -1,37 +1,31 @@
-const dotenv = require("dotenv");
-dotenv.config();
+const axios = require("axios");
 
 const HF_URL =
-  "https://router.huggingface.co/hf-inference/models/intfloat/multilingual-e5-large/pipeline/feature-extraction";
+  "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2/pipeline/feature-extraction";
+
+// console.log(" HF EMBEDDING URL:", HF_URL);
 
 async function getEmbedding(text) {
-  const response = await fetch(HF_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.HF_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  if (!text || typeof text !== "string") {
+    throw new Error("getEmbedding expects a non-empty string");
+  }
+
+  const res = await axios.post(
+    HF_URL,
+    {
       inputs: text,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-
-  const result = await response.json();
-
-  // 🔑 🔑 🔑 FINAL UNWRAP LOGIC
-  if (Array.isArray(result)) {
-    return Array.isArray(result[0]) ? result[0] : result;
-  }
-
-  if (result.embedding && Array.isArray(result.embedding)) {
-    return result.embedding;
-  }
-
-  throw new Error("Unexpected embedding response format");
+      options: { wait_for_model: true }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.HF_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      timeout: 7000
+    }
+  );
+  // console.log(res.data)
+  return res.data; // 768-d
 }
 
 module.exports = { getEmbedding };

@@ -207,34 +207,34 @@ const uploadApplication = async (req, res) => {
         resumeJson.experience =
             Number.isFinite(exp) && exp >= 0 && exp <= 30 ? exp : 0;
 
-        // const resumeEmbedding = await generateEmbedding(cleanedText);
 
-        // const similarity = checkSimilarity(resumeEmbedding, job.embedding); 
-        const resumeEmbedding = await getEmbedding(
-            "passage: " + cleanedText
-        );
+        const resumeEmbedding = await getEmbedding(cleanedText);
 
-        // Job embedding must already be stored as number[]
         const jobEmbedding = job.embedding;
-        // OR job.embedding.vector (depending on schema)
 
-        // ✅ Similarity
-        console.log(
-            "FINAL SHAPES:",
-            Array.isArray(resumeEmbedding),
-            resumeEmbedding.length,
-            Array.isArray(job.embedding),
-            job.embedding.length
-        );
+        // console.log(
+        //     "FINAL SHAPES:",
+        //     Array.isArray(resumeEmbedding),
+        //     resumeEmbedding.length,
+        //     Array.isArray(jobEmbedding),
+        //     jobEmbedding.length
+        // );
+
 
         if (!Array.isArray(resumeEmbedding) || !Array.isArray(jobEmbedding)) {
-            throw new Error("Invalid embeddings for similarity");
+            throw new Error("Invalid embeddings: expected number[]");
         }
-        const similarity = checkSimilarity(
-            resumeEmbedding,
-            jobEmbedding
-        );
 
+        if (resumeEmbedding.length !== jobEmbedding.length) {
+            throw new Error(
+                `Embedding dimension mismatch: resume=${resumeEmbedding.length}, job=${jobEmbedding.length}`
+            );
+        }
+
+
+        const similarity = checkSimilarity(resumeEmbedding, jobEmbedding);
+
+        // console.log(similarity)
         const atsScore = Math.round(
             Math.max(0, Number.isFinite(similarity) ? similarity : 0) * 100
         );
