@@ -154,7 +154,7 @@ const UserDashboard = () => {
     try {
       const response = await api.get("/user/logout");
       if (response.status === 200) {
-        navigate("/user-login");
+        navigate("/");
       }
     } catch (err) {
       setshowError(true);

@@ -112,7 +112,7 @@ const RecruiterDashboard = () => {
     try {
       const response = await api.get("/recruiter/logout");
       if (response.status === 200) {
-        navigate("/recruiter-login");
+        navigate("/");
       }
     } catch (err) {
       setshowError(true);
