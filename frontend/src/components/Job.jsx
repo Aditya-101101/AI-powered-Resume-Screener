@@ -101,7 +101,7 @@ const Job = ({ closeJob, job }) => {
     <div>
       <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
 
-        {Application && <Resume closeResume={closeResume} Application={Application} />}
+        {Application && <Resume closeResume={closeResume} Application={Application} jobId={job.id} />}
         {showerror && <Error error={error} onClose={onClose} />}
 
         <div className="h-full w-full max-w-7xl rounded-2xl bg-white shadow-2xl flex overflow-hidden">

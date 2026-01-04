@@ -5,11 +5,11 @@ import { useState } from 'react'
 
 
 const Resume = ({ closeResume, Application }) => {
-
-
+  // console.log(Application)
   const [showerror, setshowError] = useState(false)
   const [error, setError] = useState({ code: null, message: "" })
   const [showOptions, setShowOptions] = useState(false)
+  const [feedback, setFeedback] = useState("")
   const [review, setReview] = useState({
     meta: {},
     numericReview: {},
@@ -20,6 +20,36 @@ const Resume = ({ closeResume, Application }) => {
     setshowError(false)
   }
 
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault()
+    const data = {
+      feedback: feedback,
+      ApplicationId: Application._id,
+      jobId: Application.jobId
+    }
+    try {
+      const response = await api.post('/recruiter/feedback', data)
+      if (response.status === 201) {
+        alert('feedback submitted successfully')
+        setFeedback("")
+      }
+    } catch (err) {
+      setshowError(true)
+      setError({
+        code: err.response?.status || 500,
+        message: err.response?.data?.message || "Something went wrong"
+      })
+      setTimeout(() => {
+        setshowError(false)
+        setError({
+          code: null,
+          message: ""
+        })
+      }, 5000)
+
+      console.log(err)
+    }
+  }
   const handleGetReview = async () => {
     const data = { application: Application }
     try {
@@ -91,7 +121,7 @@ const Resume = ({ closeResume, Application }) => {
 
 
           <div className={`${showOptions ? "flex" : "hidden"} lg:flex justify-between ${showOptions ? "w-full sm:w-[40%]" : "w-[22%]"} border-r border-slate-200 
-                      bg-slate-50 p-5 flex-col`}>
+                      bg-slate-50 p-5 sm:py-3 px-5 flex-col`}>
             <div>
 
               <h3 className="text-sm flex justify-between font-semibold text-slate-700 mb-2">
@@ -101,7 +131,7 @@ const Resume = ({ closeResume, Application }) => {
                 {showOptions && <button className="p-1 rounded-md hover:bg-red-100 transition" onClick={() => setShowOptions(false)}>✕</button>}
 
               </h3>
-              <div className="space-y-4 text-xs text-slate-600">
+              <div className="space-y-4 sm:space-y-2 text-xs text-slate-600">
 
 
                 <div className="rounded-lg bg-white p-3 shadow-sm">
@@ -165,6 +195,13 @@ const Resume = ({ closeResume, Application }) => {
                     Matched {review.meta.matchedSkills ?? 0} of{" "}
                     {review.meta.totalSkills ?? 0} required skills
                   </p>
+                </div>
+
+                <div className="rounded-lg bg-white p-1.5 shadow-sm">
+                  <form className='flex flex-col gap-2' onSubmit={handleFeedbackSubmit}>
+                    <textarea value={feedback} name="feedback" id="feedback" placeholder='enter your feedback' onChange={e => setFeedback(e.target.value)} row={3} required className='resize-none min-h-25 sm:min-h-13 p-1 outline-blue-500'></textarea>
+                    <button type="submit" className='bg-blue-400 text-white rounded px-4 py-2'>Add Feedback</button>
+                  </form>
                 </div>
 
               </div>

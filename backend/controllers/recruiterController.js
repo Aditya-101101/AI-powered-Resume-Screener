@@ -9,6 +9,7 @@ const { uploadJobCover } = require('../services/cloudinary');
 const path = require('path')
 const fs = require('fs');
 const mongoose = require('mongoose');
+const Feedback = require('../models/feedbackSchema');
 dotenv.config()
 
 const generateEmbedding = async (text) => {
@@ -455,6 +456,25 @@ const updateApplication = async (req, res) => {
     }
 }
 
+const handleFeedback = async (req, res) => {
+    const recruiter = req.recruiter
+    const { feedback, jobId, applicationId } = req.body
+
+    if (!recruiter)
+        return res.status(401).json({ message: "unauthenticated" })
+    if (!feedback || !jobId || !applicationId)
+        return res.status(400).json({ message: "all fields required" })
+    try {
+        const application = await Application.findOne({ jobId: jobId, _id: applicationId })
+        if (!application)
+            return res.status(404).json({ message: "application not found" })
+
+        const response = await Feedback.findOneAndUpdate({ jobId: jobId, applicationId: applicationId }, { $push: { feedback: feedback } }, { upsert: true, new: true })
+        return res.status(201).json({ message: "feedback added" })
+    } catch (err) {
+        return res.status(500).json({ error: err.message })
+    }
+}
 
 const recruiterController = {
     registerRecruiter,
@@ -463,7 +483,8 @@ const recruiterController = {
     createJob,
     recruiterData,
     updateJob,
-    updateApplication
+    updateApplication,
+    handleFeedback
 }
 
 module.exports = { recruiterController }
