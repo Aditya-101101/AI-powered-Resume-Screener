@@ -46,7 +46,7 @@ const UserDashboard = () => {
   const [applicationPageCount, setApplicationPageCount] = useState(0);
   const [applicationPage, setApplicationPage] = useState(1);
 
-  const [jobPageCount, setJobPageCount] = useState(0);
+  const [jobPageCount, setJobPageCount] = useState(1);
   const [jobPage, setJobPage] = useState(1);
 
   const getTheme = (status) => {
