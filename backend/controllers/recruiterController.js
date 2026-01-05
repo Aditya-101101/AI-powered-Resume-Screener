@@ -459,6 +459,7 @@ const updateApplication = async (req, res) => {
 const handleFeedback = async (req, res) => {
     const recruiter = req.recruiter
     const { feedback, jobId, applicationId } = req.body
+    // console.log(feedback,jobId,applicationId)
 
     if (!recruiter)
         return res.status(401).json({ message: "unauthenticated" })
@@ -470,6 +471,12 @@ const handleFeedback = async (req, res) => {
             return res.status(404).json({ message: "application not found" })
 
         const response = await Feedback.findOneAndUpdate({ jobId: jobId, applicationId: applicationId }, { $push: { feedback: feedback } }, { upsert: true, new: true })
+
+        if (!application.feedback) {
+            application.feedback = response._id
+            await application.save()
+        }
+        
         return res.status(201).json({ message: "feedback added" })
     } catch (err) {
         return res.status(500).json({ error: err.message })

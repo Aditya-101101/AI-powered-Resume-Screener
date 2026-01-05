@@ -13,6 +13,7 @@ const { checkSimilarity } = require('../services/checkSimilarity');
 const { cleanResumeText } = require('../services/textCleaner')
 const { uploadOnCloudinary } = require('../services/cloudinary');
 const { extractSkillsAndExperience } = require('../services/requiredParams');
+const Feedback = require('../models/feedbackSchema');
 dotenv.config()
 
 
@@ -314,7 +315,7 @@ const userData = async (req, res) => {
         const acceptedCountPromise = Application.countDocuments({ submittedBy: user.id, status: "Accepted" })
         const rejectedCountPromise = Application.countDocuments({ submittedBy: user.id, status: "Rejected" })
         const underReviewCountPromise = Application.countDocuments({ submittedBy: user.id, status: "UnderReview" })
-        const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1, createdAt: -1 }).lean().populate('jobId', { title: 1, desc: 1 }).skip(skip).limit(APPLICATIONS_PER_PAGE)
+        const applicationsPromise = Application.find({ submittedBy: user.id }).sort({ atsScore: -1, createdAt: -1 }).populate('jobId', 'title desc').populate('feedback', 'feedback applicationId').skip(skip).limit(APPLICATIONS_PER_PAGE).lean()
 
         const [applicationCount, applications, acceptedCount, rejectedCount, underReviewCount, atsScores] = await Promise.all([applicationCountPromise, applicationsPromise, acceptedCountPromise, rejectedCountPromise, underReviewCountPromise, atsScoresPromise])
 
@@ -343,8 +344,10 @@ const userData = async (req, res) => {
             jobId: application.jobId,
             atsScore: application.atsScore,
             status: application.status,
-            resume: application.resume
+            resume: application.resume,
+            feedback: application.feedback
         }))
+        console.log(applicationsData)
 
         const pageCount = Math.ceil(applicationCount / APPLICATIONS_PER_PAGE)
 

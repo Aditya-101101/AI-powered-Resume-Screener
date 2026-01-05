@@ -4,6 +4,7 @@ const FeedbackSchema = new mongoose.Schema({
     feedback: {
         type: [String],
         required: true,
+        trim: true
     },
     jobId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +14,8 @@ const FeedbackSchema = new mongoose.Schema({
     applicationId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'application',
-        required: true
+        required: true,
+        unique: true
     }
 
 }, { timestamps: true })

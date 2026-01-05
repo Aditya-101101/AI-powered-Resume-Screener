@@ -29,6 +29,11 @@ const ApplicationSchema = new mongoose.Schema({
     resume: {
         type: String,
         required: true
+    },
+    feedback: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'feedback',
+        default:null
     }
 }, { timestamps: true, })
 
@@ -43,7 +48,7 @@ ApplicationSchema.index(
 )
 
 ApplicationSchema.pre('save', function () {
-    if (!this.isModified('skills')) return ;
+    if (!this.isModified('skills')) return;
 
     this.skills = [...new Set(
         this.skills.map(skill => skill.toLowerCase())

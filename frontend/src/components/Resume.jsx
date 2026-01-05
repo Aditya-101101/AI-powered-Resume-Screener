@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 
 const Resume = ({ closeResume, Application }) => {
-  // console.log(Application)
+  // console.log(Application._id)
   const [showerror, setshowError] = useState(false)
   const [error, setError] = useState({ code: null, message: "" })
   const [showOptions, setShowOptions] = useState(false)
@@ -24,8 +24,8 @@ const Resume = ({ closeResume, Application }) => {
     e.preventDefault()
     const data = {
       feedback: feedback,
-      ApplicationId: Application._id,
-      jobId: Application.jobId
+      jobId: Application.jobId,
+      applicationId: Application._id
     }
     try {
       const response = await api.post('/recruiter/feedback', data)
@@ -55,7 +55,7 @@ const Resume = ({ closeResume, Application }) => {
     try {
       const response = await api.post('/jobs/application-review', data)
       if (response.status === 201) {
-        console.log(response.data.review)
+        // console.log(response.data.review)
         setReview(response.data.review)
       }
 
@@ -200,7 +200,7 @@ const Resume = ({ closeResume, Application }) => {
                 <div className="rounded-lg bg-white p-1.5 shadow-sm">
                   <form className='flex flex-col gap-2' onSubmit={handleFeedbackSubmit}>
                     <textarea value={feedback} name="feedback" id="feedback" placeholder='enter your feedback' onChange={e => setFeedback(e.target.value)} row={3} required className='resize-none min-h-25 sm:min-h-13 p-1 outline-blue-500'></textarea>
-                    <button type="submit" className='bg-blue-400 text-white rounded px-4 py-2'>Add Feedback</button>
+                    <button type="submit" className='bg-blue-400 text-white rounded px-4 py-2 hover:cursor-pointer hover:outline-1 hover:outline-cyan-400'>Add Feedback</button>
                   </form>
                 </div>
 

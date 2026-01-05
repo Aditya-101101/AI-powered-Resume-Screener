@@ -20,6 +20,7 @@ const UserDashboard = () => {
   const [email, setEmail] = useState("");
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [activeFeedbacks, setActiveFeedbacks] = useState([])
   const [atsStats, setAtsStats] = useState({
     avg: 0,
     max: 0,
@@ -190,6 +191,16 @@ const UserDashboard = () => {
     setshowApplication(true);
   };
   const closeApplication = () => setshowApplication(false);
+
+
+  const toggleFeedback = (applicationId) => {
+    setActiveFeedbacks(prev =>
+      prev.includes(applicationId)
+        ? prev.filter(id => id !== applicationId)
+        : [...prev, applicationId]
+    )
+  }
+
 
   return (
     <div className="h-screen w-screen bg-linear-to-br from-[#eef2ff] via-[#f8fafc] to-[#ecfeff] flex items-center justify-center text-slate-800">
@@ -578,7 +589,7 @@ const UserDashboard = () => {
                   </div>
 
 
-                  <div className="max-h-[90%] md:flex-1   w-full overflow-y-scroll">
+                  <div className="max-h-[90%] md:flex-1 overflow-auto  w-full ">
                     <div className="px-5 py-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <StatCard
@@ -608,13 +619,13 @@ const UserDashboard = () => {
                           No applications received
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
                           {applications.map((application) => (
                             <div
                               key={application.id}
                               className="group relative rounded-xl bg-white border border-slate-200 
-                                                p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 
-                                                transition-all flex flex-col"
+                            p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 
+                            transition-all flex flex-col"
                             >
 
                               <div className="mb-3">
@@ -654,6 +665,33 @@ const UserDashboard = () => {
                               >
                                 View Resume
                               </a>
+                              <div className="flex flex-col gap-3 border-t border-slate-200 pt-3 mt-3 px-2">
+                                <button
+                                  onClick={() => toggleFeedback(application.id)}
+                                  className={`${activeFeedbacks.includes(application.id) ? "bg-red-400" : "bg-violet-400"} w-full text-sm font-semibold text-white shadow-md shadow-slate-300 rounded-lg py-2`}
+                                >
+                                  {activeFeedbacks.includes(application.id) ? "Close" : "Feedback"}
+                                </button>
+
+                                {activeFeedbacks.includes(application.id) && (
+                                  <>
+                                    {!application.feedback ? (
+                                      <div className="text-sm text-slate-500 text-center">
+                                        No feedback to show
+                                      </div>
+                                    ) : (
+                                      <div className="flex min-h-20 flex-col gap-3 w-full">
+                                        {application.feedback?.feedback?.map((feedback, idx) => (
+                                          <div key={idx} className="text-sm bg-slate-100 rounded-md p-2 text-slate-700">
+                                            {feedback}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+
                             </div>
                           ))}
                         </div>
@@ -714,7 +752,7 @@ const UserDashboard = () => {
           </main>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
