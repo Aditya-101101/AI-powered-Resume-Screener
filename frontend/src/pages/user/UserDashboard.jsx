@@ -43,7 +43,7 @@ const UserDashboard = () => {
 
   const [showApplication, setshowApplication] = useState(false);
 
-  const [applicationPageCount, setApplicationPageCount] = useState(0);
+  const [applicationPageCount, setApplicationPageCount] = useState(1);
   const [applicationPage, setApplicationPage] = useState(1);
 
   const [jobPageCount, setJobPageCount] = useState(1);
