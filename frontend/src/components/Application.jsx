@@ -12,7 +12,7 @@ const Application = ({ job, closeApplication }) => {
     const [showerror, setshowError] = useState(false)
     const [error, setError] = useState({ code: null, message: "" })
     const [loading, setLoading] = useState(false)
-
+    const [showAllSkills, setShowAllSkills] = useState(false)
     const handleResumeChange = (e) => {
         setResume(e.target.files[0])
     }
@@ -115,9 +115,10 @@ const Application = ({ job, closeApplication }) => {
                             />
                         </div>
 
-                        <p className="text-sm  text-slate-600 leading-relaxed ">
+                        <pre className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap wrap-break-word overflow-hidden">
                             {job.desc}
-                        </p>
+                        </pre>
+
 
                         <div>
                             <p className="text-xs font-semibold text-slate-500 mb-2 uppercase">
@@ -135,9 +136,16 @@ const Application = ({ job, closeApplication }) => {
                                 ))}
 
                                 {job.skillsRequired.length > MAX_SKILLS && (
-                                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-slate-200 text-slate-600">
-                                        +{job.skillsRequired.length - MAX_SKILLS} more
-                                    </span>
+                                    !showAllSkills ? <span onClick={() => setShowAllSkills(true)} className="hover:cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-slate-200 text-slate-600">
+                                        + {job.skillsRequired.length - MAX_SKILLS} more
+                                    </span> : job.skillsRequired.slice(MAX_SKILLS).map((skill) => (
+                                        <span
+                                            key={skill}
+                                            className="px-2 py-1 text-xs font-medium rounded-full bg-indigo-500/10 text-indigo-600"
+                                        >
+                                            {skill}
+                                        </span>
+                                    ))
                                 )}
                             </div>
                         </div>

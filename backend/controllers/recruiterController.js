@@ -23,7 +23,7 @@ const validEmail = (email) => {
 }
 
 const checkStrength = (password) => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@$!#%*?&]{8,}$/;
     return regex.test(password);
 }
 
@@ -476,7 +476,7 @@ const handleFeedback = async (req, res) => {
             application.feedback = response._id
             await application.save()
         }
-        
+
         return res.status(201).json({ message: "feedback added" })
     } catch (err) {
         return res.status(500).json({ error: err.message })

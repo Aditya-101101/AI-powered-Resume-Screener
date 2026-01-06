@@ -49,7 +49,7 @@ const RecruiterDashboard = () => {
       .map((item) => item.trim())
       .filter(Boolean);
 
-  const [jobPageCount, setJobPageCount] = useState(0);
+  const [jobPageCount, setJobPageCount] = useState(1);
   const [jobPage, setJobPage] = useState(1);
 
   const getRecruiterData = async () => {

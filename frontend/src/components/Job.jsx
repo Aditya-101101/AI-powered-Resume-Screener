@@ -16,6 +16,7 @@ const Job = ({ closeJob, job }) => {
   const [applicationPageCount, setApplicationPageCount] = useState(1)
   const [applicationPage, setApplicationPage] = useState(1)
   const [showJob, setShowJob] = useState(false)
+  const [showAllSkills, setShowAllSkills] = useState(false)
 
   const getApplications = async () => {
     try {
@@ -156,9 +157,16 @@ const Job = ({ closeJob, job }) => {
                     ))}
 
                     {job.skillsRequired.length > MAX_SKILLS && (
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-slate-200 text-slate-600">
-                        +{job.skillsRequired.length - MAX_SKILLS} more
-                      </span>
+                      !showAllSkills ? <span onClick={() => setShowAllSkills(true)} className="hover:cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-slate-200 text-slate-600">
+                        + {job.skillsRequired.length - MAX_SKILLS} more
+                      </span> : job.skillsRequired.slice(MAX_SKILLS).map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-2 py-1 text-xs font-medium rounded-full bg-indigo-500/10 text-indigo-600"
+                        >
+                          {skill}
+                        </span>
+                      ))
                     )}
                   </div>
                 </div>
@@ -297,7 +305,7 @@ const Job = ({ closeJob, job }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
 
   )
 }

@@ -43,10 +43,10 @@ const UserDashboard = () => {
 
   const [showApplication, setshowApplication] = useState(false);
 
-  const [applicationPageCount, setApplicationPageCount] = useState(0);
+  const [applicationPageCount, setApplicationPageCount] = useState(1);
   const [applicationPage, setApplicationPage] = useState(1);
 
-  const [jobPageCount, setJobPageCount] = useState(0);
+  const [jobPageCount, setJobPageCount] = useState(1);
   const [jobPage, setJobPage] = useState(1);
 
   const getTheme = (status) => {
@@ -668,7 +668,7 @@ const UserDashboard = () => {
                               <div className="flex flex-col gap-3 border-t border-slate-200 pt-3 mt-3 px-2">
                                 <button
                                   onClick={() => toggleFeedback(application.id)}
-                                  className={`${activeFeedbacks.includes(application.id) ? "bg-red-400" : "bg-violet-400"} w-full text-sm font-semibold text-white shadow-md shadow-slate-300 rounded-lg py-2`}
+                                  className={`${activeFeedbacks.includes(application.id) ? "bg-red-400" : "bg-violet-400"} w-full text-sm font-semibold text-white hover:cursor-pointer shadow-md shadow-slate-300 rounded-lg py-2`}
                                 >
                                   {activeFeedbacks.includes(application.id) ? "Close" : "Feedback"}
                                 </button>
