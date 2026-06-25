@@ -26,6 +26,24 @@ const ApplicationSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    atsBreakdown: {
+        skills: { type: Number, default: 0 },
+        experience: { type: Number, default: 0 },
+        education: { type: Number, default: 0 },
+        keywords: { type: Number, default: 0 },
+    },
+    atsExplanation: {
+        matchedSkills: [{
+            skill: String,
+            matched: Boolean,
+        }],
+        experience: {
+            required: { type: Number, default: 0 },
+            candidate: { type: Number, default: 0 },
+        },
+        missingKeywords: [String],
+        suggestions: [String],
+    },
     resume: {
         type: String,
         required: true

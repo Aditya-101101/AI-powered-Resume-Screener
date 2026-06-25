@@ -74,6 +74,8 @@ const job = async (req, res) => {
                 skills: 1,
                 experience: 1,
                 atsScore: 1,
+                atsBreakdown: 1,
+                atsExplanation: 1,
                 status: 1,
                 submittedBy: 1,
                 createdAt: 1,

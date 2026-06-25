@@ -21,10 +21,14 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
 
     if (file.fieldname === 'resume') {
-        if (file.mimetype === 'application/pdf') {
+        const allowed = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        if (allowed.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF files are allowed for resume'), false);
+            cb(new Error('Only PDF and DOCX files are allowed for resume'), false);
         }
     }
     else {

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import api from '../api/axios'
 import Error from './Error'
+import AtsExplanation from './AtsExplanation'
 import { useState } from 'react'
 
 
@@ -196,6 +197,19 @@ const Resume = ({ closeResume, Application }) => {
                     {review.meta.totalSkills ?? 0} required skills
                   </p>
                 </div>
+
+                {Application.atsExplanation && (
+                  <div className="rounded-lg bg-white p-3 shadow-sm">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">
+                      ATS Score Breakdown
+                    </p>
+                    <AtsExplanation
+                      explanation={Application.atsExplanation}
+                      breakdown={Application.atsBreakdown}
+                      score={Application.atsScore}
+                    />
+                  </div>
+                )}
 
                 <div className="rounded-lg bg-white p-1.5 shadow-sm">
                   <form className='flex flex-col gap-2' onSubmit={handleFeedbackSubmit}>

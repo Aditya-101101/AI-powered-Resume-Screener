@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Loading = () => {
+const Loading = ({text}) => {
     return (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <button
@@ -32,7 +32,7 @@ const Loading = () => {
                     />
                 </svg>
 
-                Submitting…
+                {text}…
             </button>
         </div>
 

@@ -8,20 +8,13 @@ const Job = require('../models/jobSchema')
 const pdfParse = require("pdf-parse");
 const path = require("path");
 const fs = require("fs");
-const { getEmbedding } = require('../services/generateEmbedding');
-const { checkSimilarity } = require('../services/checkSimilarity');
+const { getNormalizedEmbedding } = require('../services/generateEmbedding');
+const { calculateAtsScore } = require('../services/atsScoring');
 const { cleanResumeText } = require('../services/textCleaner')
 const { uploadOnCloudinary } = require('../services/cloudinary');
 const { extractSkillsAndExperience } = require('../services/requiredParams');
 const Feedback = require('../models/feedbackSchema');
 dotenv.config()
-
-
-
-const generateEmbedding = async (text) => {
-    const vec = await getEmbedding(`${text}`);
-    return vec
-}
 
 const validEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -208,37 +201,15 @@ const uploadApplication = async (req, res) => {
         resumeJson.experience =
             Number.isFinite(exp) && exp >= 0 && exp <= 30 ? exp : 0;
 
+        const resumeEmbedding = await getNormalizedEmbedding(cleanedText);
 
-        const resumeEmbedding = await getEmbedding(cleanedText);
-
-        const jobEmbedding = job.embedding;
-
-        // console.log(
-        //     "FINAL SHAPES:",
-        //     Array.isArray(resumeEmbedding),
-        //     resumeEmbedding.length,
-        //     Array.isArray(jobEmbedding),
-        //     jobEmbedding.length
-        // );
-
-
-        if (!Array.isArray(resumeEmbedding) || !Array.isArray(jobEmbedding)) {
-            throw new Error("Invalid embeddings: expected number[]");
-        }
-
-        if (resumeEmbedding.length !== jobEmbedding.length) {
-            throw new Error(
-                `Embedding dimension mismatch: resume=${resumeEmbedding.length}, job=${jobEmbedding.length}`
-            );
-        }
-
-
-        const similarity = checkSimilarity(resumeEmbedding, jobEmbedding);
-
-        // console.log(similarity)
-        const atsScore = Math.round(
-            Math.max(0, Number.isFinite(similarity) ? similarity : 0) * 100
-        );
+        const atsResult = calculateAtsScore({
+            resumeText: cleanedText,
+            candidateSkills: resumeJson.skills,
+            candidateExperience: resumeJson.experience,
+            resumeEmbedding,
+            job,
+        });
 
         const uploaded = await uploadOnCloudinary(filePath);
         // console.log(uploaded)
@@ -251,16 +222,23 @@ const uploadApplication = async (req, res) => {
             skills: resumeJson.skills,
             experience: resumeJson.experience,
             resume: uploaded.secure_url,
-            atsScore
+            atsScore: atsResult.score,
+            atsBreakdown: atsResult.breakdown,
+            atsExplanation: atsResult.explanation,
         });
 
         return res.status(201).json({
+            score: atsResult.score,
+            breakdown: atsResult.breakdown,
+            explanation: atsResult.explanation,
             application: {
                 skills: application.skills,
                 experience: application.experience,
                 status: application.status,
                 resume: application.resume,
-                atsScore
+                atsScore: atsResult.score,
+                atsBreakdown: atsResult.breakdown,
+                atsExplanation: atsResult.explanation,
             },
             message: "Application submitted successfully"
         });
@@ -343,11 +321,12 @@ const userData = async (req, res) => {
             experience: application.experience,
             jobId: application.jobId,
             atsScore: application.atsScore,
+            atsBreakdown: application.atsBreakdown,
+            atsExplanation: application.atsExplanation,
             status: application.status,
             resume: application.resume,
             feedback: application.feedback
         }))
-        console.log(applicationsData)
 
         const pageCount = Math.ceil(applicationCount / APPLICATIONS_PER_PAGE)
 

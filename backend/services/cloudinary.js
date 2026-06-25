@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const dotenv = require('dotenv')
+const path=require('path')
 dotenv.config()
 const fs = require('fs')
 
@@ -13,14 +14,17 @@ const uploadOnCloudinary = async (localFilePath) => {
     try {
         if (!localFilePath) return null;
 
-        const response = await cloudinary.uploader.upload(localFilePath, {
+        const ext = path.extname(localFilePath).slice(1).toLowerCase();
+        const options = {
             resource_type: "raw",
             folder: "resumes",
             access_mode: "public",
             use_filename: true,
             unique_filename: true,
-            format: "pdf"
-        });
+        };
+        if (ext === "pdf") options.format = "pdf";
+
+        const response = await cloudinary.uploader.upload(localFilePath, options);
 
         if (fs.existsSync(localFilePath)) {
             fs.unlinkSync(localFilePath);

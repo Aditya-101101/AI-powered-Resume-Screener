@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 const Application = lazy(() => import("../../components/Application"));
 const ApplicationStatusPie = lazy(() => import("../../components/PieChart"));
+const AtsExplanation = lazy(() => import("../../components/AtsExplanation"));
 
 const MAX_SKILLS = 5;
 
@@ -21,6 +22,7 @@ const UserDashboard = () => {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [activeFeedbacks, setActiveFeedbacks] = useState([])
+  const [activeAtsDetails, setActiveAtsDetails] = useState([])
   const [atsStats, setAtsStats] = useState({
     avg: 0,
     max: 0,
@@ -195,6 +197,14 @@ const UserDashboard = () => {
 
   const toggleFeedback = (applicationId) => {
     setActiveFeedbacks(prev =>
+      prev.includes(applicationId)
+        ? prev.filter(id => id !== applicationId)
+        : [...prev, applicationId]
+    )
+  }
+
+  const toggleAtsDetails = (applicationId) => {
+    setActiveAtsDetails(prev =>
       prev.includes(applicationId)
         ? prev.filter(id => id !== applicationId)
         : [...prev, applicationId]
@@ -557,7 +567,7 @@ const UserDashboard = () => {
                       <select
                         value={jobPage}
                         onChange={(e) =>
-                          setApplicationPage(Number(e.target.value))
+                          setJobPage(Number(e.target.value))
                         }
                         className="ml-2 text-xs rounded-md border border-slate-300 
                                             px-2 py-1 cursor-pointer
@@ -666,6 +676,23 @@ const UserDashboard = () => {
                                 View Resume
                               </a>
                               <div className="flex flex-col gap-3 border-t border-slate-200 pt-3 mt-3 px-2">
+                                <button
+                                  onClick={() => toggleAtsDetails(application.id)}
+                                  className={`${activeAtsDetails.includes(application.id) ? "bg-emerald-500" : "bg-slate-700"} w-full text-sm font-semibold text-white hover:cursor-pointer shadow-md shadow-slate-300 rounded-lg py-2`}
+                                >
+                                  {activeAtsDetails.includes(application.id) ? "Hide Score Details" : "Why This Score?"}
+                                </button>
+
+                                {activeAtsDetails.includes(application.id) && (
+                                  <Suspense fallback={null}>
+                                    <AtsExplanation
+                                      explanation={application.atsExplanation}
+                                      breakdown={application.atsBreakdown}
+                                      score={application.atsScore}
+                                    />
+                                  </Suspense>
+                                )}
+
                                 <button
                                   onClick={() => toggleFeedback(application.id)}
                                   className={`${activeFeedbacks.includes(application.id) ? "bg-red-400" : "bg-violet-400"} w-full text-sm font-semibold text-white hover:cursor-pointer shadow-md shadow-slate-300 rounded-lg py-2`}

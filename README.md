@@ -3,6 +3,8 @@ A full-stack resume screening and job application platform.
 
 🔗 **Live Beta:** https://rescreener-62.onrender.com  
 
+📖 **Architecture & codebase guide:** [ARCHITECTURE.md](ARCHITECTURE.md) (diagrams, API map, ATS pipeline, data model)
+
 ---
 
 ## 📌 Overview

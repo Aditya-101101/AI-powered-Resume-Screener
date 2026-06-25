@@ -38,7 +38,7 @@ const Job = ({ closeJob, job }) => {
           code: null,
           message: ""
         })
-      }, 5000)
+      }, 10000)
 
       console.log(err)
     }
@@ -72,7 +72,7 @@ const Job = ({ closeJob, job }) => {
       try {
         const data = {
           jobId: job.id,
-          status: false
+          setStatus: false
         }
         const response = await api.patch('/recruiter/update', data)
         if (response.status === 200)

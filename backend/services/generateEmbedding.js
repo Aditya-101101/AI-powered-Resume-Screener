@@ -3,7 +3,7 @@ const axios = require("axios");
 const HF_URL =
   "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2/pipeline/feature-extraction";
 
-// console.log(" HF EMBEDDING URL:", HF_URL);
+
 
 async function getEmbedding(text) {
   if (!text || typeof text !== "string") {
@@ -24,8 +24,29 @@ async function getEmbedding(text) {
       timeout: 7000
     }
   );
-  // console.log(res.data)
-  return res.data; // 768-d
+  return res.data;
 }
 
-module.exports = { getEmbedding };
+function flattenEmbedding(data) {
+  if (!Array.isArray(data)) return null;
+  if (data.length === 0) return null;
+  if (typeof data[0] === "number") return data;
+  if (Array.isArray(data[0])) {
+    const vectors = data.filter(Array.isArray);
+    if (!vectors.length) return null;
+    const dim = vectors[0].length;
+    const averaged = new Array(dim).fill(0);
+    for (const vec of vectors) {
+      for (let i = 0; i < dim; i++) averaged[i] += vec[i];
+    }
+    return averaged.map((v) => v / vectors.length);
+  }
+  return null;
+}
+
+async function getNormalizedEmbedding(text) {
+  const raw = await getEmbedding(text);
+  return flattenEmbedding(raw);
+}
+
+module.exports = { getEmbedding, flattenEmbedding, getNormalizedEmbedding };
