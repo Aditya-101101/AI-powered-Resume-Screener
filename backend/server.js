@@ -44,6 +44,15 @@ app.use("/recruiter", checkRecruiterAuth("token"), recruiterRoute);
 app.use("/jobs", jobRoute);
 
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        success: true,
+        status: "healthy",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.get("/", checkUserAuth("token"), checkRecruiterAuth("token"), redirectController);
 
 
