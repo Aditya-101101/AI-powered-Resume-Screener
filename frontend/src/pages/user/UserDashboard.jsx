@@ -689,6 +689,7 @@ const UserDashboard = () => {
                                       explanation={application.atsExplanation}
                                       breakdown={application.atsBreakdown}
                                       score={application.atsScore}
+                                      isUser={true}
                                     />
                                   </Suspense>
                                 )}

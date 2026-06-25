@@ -121,7 +121,7 @@ const Resume = ({ closeResume, Application }) => {
                     bg-white/90 shadow-2xl overflow-hidden flex">
 
 
-          <div className={`${showOptions ? "flex" : "hidden"} lg:flex justify-between ${showOptions ? "w-full sm:w-[40%]" : "w-[22%]"} border-r border-slate-200 
+          <div className={`${showOptions ? "flex" : "hidden"} overflow-auto lg:flex justify-between ${showOptions ? "w-full sm:w-[40%]" : "w-[22%]"} border-r border-slate-200 
                       bg-slate-50 p-5 sm:py-3 px-5 flex-col`}>
             <div>
 
@@ -207,6 +207,7 @@ const Resume = ({ closeResume, Application }) => {
                       explanation={Application.atsExplanation}
                       breakdown={Application.atsBreakdown}
                       score={Application.atsScore}
+                      isUser={false}
                     />
                   </div>
                 )}
@@ -221,7 +222,7 @@ const Resume = ({ closeResume, Application }) => {
               </div>
 
             </div>
-            <div className='flex w-full justify-around'>
+            <div className='flex mt-3 w-full justify-around'>
               <button onClick={() => handleSetStatus("Accepted")} className='bg-green-200 text-green-400 px-4 py-1 rounded hover:outline-1 hover:cursor-pointer hover:scale-95'>Accept</button>
               <button onClick={() => handleSetStatus("Rejected")} className='bg-red-200 text-red-400 px-4 py-1 rounded hover:outline-1 hover:cursor-pointer hover:scale-95'>Reject</button>
             </div>

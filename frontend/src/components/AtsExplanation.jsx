@@ -1,6 +1,6 @@
 import React from "react";
 
-const AtsExplanation = ({ explanation, breakdown, score }) => {
+const AtsExplanation = ({ explanation, breakdown, score,isUser }) => {
   if (!explanation) {
     return (
       <p className="text-sm text-slate-500 text-center py-2">
@@ -113,7 +113,7 @@ const AtsExplanation = ({ explanation, breakdown, score }) => {
         </div>
       )}
 
-      {suggestions.length > 0 && (
+      {suggestions.length > 0 &&  isUser && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
             Suggestions

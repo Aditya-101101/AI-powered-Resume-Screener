@@ -21,7 +21,7 @@ async function getEmbedding(text) {
         Authorization: `Bearer ${process.env.HF_API_KEY}`,
         "Content-Type": "application/json"
       },
-      timeout: 7000
+      timeout: 10000
     }
   );
   return res.data;
