@@ -159,4 +159,4 @@ function normalizeJobSkills(jobSkills) {
 }
 
 
-module.exports = { extractSkillsAndExperience, normalizeJobSkills };
+module.exports = { extractSkillsAndExperience, normalizeJobSkills, extractSkills, extractExperience };

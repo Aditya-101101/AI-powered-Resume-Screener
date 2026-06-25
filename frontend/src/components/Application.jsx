@@ -63,7 +63,7 @@ const Application = ({ job, closeApplication }) => {
     return (
         <div className='absolute z-20 h-full w-full flex flex-col gap-3 sm:gap-5 sm:flex-row items-center justify-center px-5 py-3 rounded-r-lg overflow-hidden shadow bg-black/10 backdrop-blur-xl'>
             {showerror && <Error error={error} onClose={onClose} />}
-            {loading && <Loading />}
+            {loading && <Loading text="submitting" />}
             <div className="h-14 w-full flex sm:hidden items-center justify-between px-6
                     rounded-lg bg-slate-100">
                 <h2 className="text-lg font-semibold text-slate-800">
