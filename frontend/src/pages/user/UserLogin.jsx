@@ -22,7 +22,7 @@ const UserLogin = () => {
         try {
             const response = await api.post('/user/login', data)
             if (response.status === 200) {
-                console.log(response)
+                // console.log(response)
                 navigate('/user-dashboard')
 
                 setEmail("")
